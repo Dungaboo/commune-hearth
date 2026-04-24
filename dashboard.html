@@ -56,7 +56,29 @@ html, body { height: 100%; overflow: hidden; }
 }
 .hearth-title { font-family: var(--heading-font); font-size: 1.1rem; font-weight: 300; font-style: italic; color: var(--muted); letter-spacing: 0.04em; }
 .community-name { font-family: var(--heading-font); font-size: clamp(1.6rem,2.5vw,2.2rem); font-weight: 600; letter-spacing: 0.06em; }
-.fire-container { width: 120px; position: relative; z-index: 1; }
+
+/* ARCH SCENE */
+.hearth-scene {
+  position: relative; width: 100%; flex: 1;
+  display: flex; align-items: flex-end; justify-content: center;
+  min-height: 220px; max-height: 320px;
+}
+#hearth-ember-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 2;
+}
+.hearth-arch {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 88%; z-index: 0; opacity: 0.55;
+}
+.hearth-hearthstone {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 75%; z-index: 1;
+}
+.fire-container {
+  width: 170px; position: relative; z-index: 3;
+  margin-bottom: 18px; flex-shrink: 0;
+}
 
 /* WARMTH */
 .warmth-row { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%; }
@@ -150,17 +172,28 @@ html, body { height: 100%; overflow: hidden; }
 
 /* STATUS BAR */
 .status-bar {
-  display: flex; align-items: center; gap: 1.5rem;
-  padding: 0.6rem 0; border-top: 1px solid var(--border);
-  flex-shrink: 0; position: relative; z-index: 1; flex-wrap: wrap;
+  display: flex; align-items: center;
+  gap: 1rem; padding: 0.5rem 0;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0; position: relative; z-index: 1;
+  overflow: hidden;
 }
-.status-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--faint); }
-.status-dot { width: 5px; height: 5px; border-radius: 50%; background: #7ac47a; animation: dotBlink 3s ease-in-out infinite; }
-.status-bar-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; color: var(--faint); }
+.status-item {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.68rem; color: var(--faint);
+  white-space: nowrap; flex-shrink: 0;
+}
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: #7ac47a; animation: dotBlink 3s ease-in-out infinite; flex-shrink: 0; }
+.status-bar-right {
+  margin-left: auto; display: flex; align-items: center;
+  gap: 0.5rem; font-size: 0.68rem; color: var(--faint);
+  white-space: nowrap; flex-shrink: 0;
+}
 .chapter-badge {
   background: rgba(196,98,45,0.1); border: 1px solid rgba(196,98,45,0.2);
   border-radius: 2rem; padding: 0.2rem 0.7rem; font-size: 0.62rem;
   letter-spacing: 0.1em; color: var(--accent); animation: chapterGlow 4s ease-in-out infinite;
+  white-space: nowrap;
 }
 @keyframes chapterGlow { 0%,100%{opacity:0.7} 50%{opacity:1} }
 
@@ -183,6 +216,8 @@ html, body { height: 100%; overflow: hidden; }
   .platforms-card { grid-column:1; grid-row:4; }
   .drafts-card    { grid-column:1; grid-row:5; }
   .topbar { flex-wrap: wrap; gap: 0.8rem; }
+  .status-item:not(:first-child) { display: none; }
+  .status-bar-right { margin-left: auto; }
   .topbar-right { width: 100%; justify-content: space-between; }
   .topbar-time { display: none; }
   .status-bar-right { margin-left: 0; }
@@ -234,7 +269,47 @@ html, body { height: 100%; overflow: hidden; }
       <div class="card hearth-card">
         <div class="hearth-title">tending</div>
         <div class="community-name" id="community-name">Your Community</div>
-        <div class="fire-container" id="fire-container"></div>
+
+        <!-- SCENE: arch + fire + embers -->
+        <div class="hearth-scene">
+          <canvas id="hearth-ember-canvas"></canvas>
+
+          <!-- ARCH (SVG silhouette) -->
+          <svg class="hearth-arch" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10,200 L10,90 Q10,20 80,20 L160,20 Q230,20 230,90 L230,200 Z"
+              fill="none" stroke="var(--accent)" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round"
+              stroke-dasharray="6,4" opacity="0.5"/>
+            <path d="M30,200 L30,95 Q30,42 80,42 L160,42 Q210,42 210,95 L210,200 Z"
+              fill="var(--accent)" opacity="0.04"/>
+            <!-- keystone -->
+            <polygon points="110,14 130,14 135,28 105,28"
+              fill="var(--accent)" opacity="0.3"/>
+            <!-- side bricks suggestion -->
+            <line x1="10" y1="120" x2="30" y2="120" stroke="var(--accent)" stroke-width="1" opacity="0.25"/>
+            <line x1="10" y1="150" x2="30" y2="150" stroke="var(--accent)" stroke-width="1" opacity="0.25"/>
+            <line x1="10" y1="180" x2="30" y2="180" stroke="var(--accent)" stroke-width="1" opacity="0.25"/>
+            <line x1="210" y1="120" x2="230" y2="120" stroke="var(--accent)" stroke-width="1" opacity="0.25"/>
+            <line x1="210" y1="150" x2="230" y2="150" stroke="var(--accent)" stroke-width="1" opacity="0.25"/>
+            <line x1="210" y1="180" x2="230" y2="180" stroke="var(--accent)" stroke-width="1" opacity="0.25"/>
+          </svg>
+
+          <!-- HEARTHSTONE (the floor shelf) -->
+          <svg class="hearth-hearthstone" viewBox="0 0 300 28" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="6" width="300" height="16" rx="4"
+              fill="var(--accent)" opacity="0.12"/>
+            <rect x="8" y="2" width="284" height="10" rx="3"
+              fill="var(--accent)" opacity="0.08"/>
+            <!-- stone seams -->
+            <line x1="75"  y1="6" x2="75"  y2="22" stroke="var(--accent)" stroke-width="0.8" opacity="0.2"/>
+            <line x1="150" y1="6" x2="150" y2="22" stroke="var(--accent)" stroke-width="0.8" opacity="0.2"/>
+            <line x1="225" y1="6" x2="225" y2="22" stroke="var(--accent)" stroke-width="0.8" opacity="0.2"/>
+          </svg>
+
+          <!-- FIRE -->
+          <div class="fire-container" id="fire-container"></div>
+        </div>
+
         <div class="warmth-row">
           <div class="warmth-label">Community warmth</div>
           <div class="warmth-bar-wrap"><div class="warmth-bar"></div></div>
@@ -316,6 +391,107 @@ html, body { height: 100%; overflow: hidden; }
 
   // Mount fire
   mountFire('fire-container');
+
+  // ── HEARTH CARD EMBERS ───────────────────────────────────
+  (function initHearthEmbers() {
+    const canvas = document.getElementById('hearth-ember-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function getColors() {
+      const s = getComputedStyle(document.documentElement);
+      return [
+        s.getPropertyValue('--accent').trim()       || '#c4622d',
+        s.getPropertyValue('--accent2').trim()      || '#e8924a',
+        s.getPropertyValue('--fire-bright').trim()  || '#ffe066',
+        s.getPropertyValue('--fire-top').trim()     || '#fff5cc',
+      ];
+    }
+
+    function spawn() {
+      const w = canvas.width, h = canvas.height;
+      const colors = getColors();
+      // Embers rise from the fire area — center bottom of canvas
+      const spread = w * 0.22;
+      return {
+        x:       w * 0.5 + (Math.random() - 0.5) * spread,
+        y:       h * 0.78,
+        r:       0.8 + Math.random() * 3.2,
+        vx:      (Math.random() - 0.5) * 0.55,
+        vy:      -(0.5 + Math.random() * 1.4),
+        alpha:   0,
+        maxAlpha: 0.2 + Math.random() * 0.55,
+        life:    0,
+        maxLife: 90 + Math.random() * 140,
+        color:   colors[Math.floor(Math.random() * colors.length)],
+        wobble:  (Math.random() - 0.5) * 0.018,
+      };
+    }
+
+    let embers = [];
+    for (let i = 0; i < 18; i++) {
+      const e = spawn();
+      e.life = Math.random() * e.maxLife;
+      embers.push(e);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (Math.random() < 0.12 && embers.length < 26) embers.push(spawn());
+      embers = embers.filter(e => e.life < e.maxLife);
+
+      embers.forEach(e => {
+        e.life++;
+        e.vx += e.wobble;
+        e.x  += e.vx;
+        e.y  += e.vy;
+
+        const quarter = e.maxLife * 0.25;
+        if (e.life < quarter) {
+          e.alpha = e.maxAlpha * (e.life / quarter);
+        } else if (e.life > e.maxLife * 0.65) {
+          e.alpha = e.maxAlpha * (1 - (e.life - e.maxLife * 0.65) / (e.maxLife * 0.35));
+        } else {
+          e.alpha = e.maxAlpha;
+        }
+        e.alpha = Math.max(0, e.alpha);
+
+        ctx.save();
+        ctx.globalAlpha = e.alpha;
+
+        // Glow for larger embers
+        if (e.r > 2) {
+          const grd = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.r * 3);
+          grd.addColorStop(0, e.color + '50');
+          grd.addColorStop(1, 'transparent');
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.r * 3, 0, Math.PI * 2);
+          ctx.fillStyle = grd;
+          ctx.fill();
+        }
+
+        // Ember dot — slightly oval, rotates as it rises
+        ctx.beginPath();
+        ctx.ellipse(e.x, e.y, e.r, e.r * 0.7, e.life * 0.03, 0, Math.PI * 2);
+        ctx.fillStyle = e.color;
+        ctx.fill();
+
+        ctx.restore();
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  })();
 </script>
 </body>
 </html>
