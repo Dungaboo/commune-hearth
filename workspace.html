@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commune Hearth — Voice Workspace</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+html, body { height: 100%; overflow: hidden; }
+.app-shell { display: flex; height: 100vh; overflow: hidden; }
+
+/* WORKSPACE */
+.workspace { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+/* TOP BAR */
+.ws-top {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.9rem 1.6rem; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; background: var(--bg2); transition: all 0.35s;
+}
+.ws-back { background: none; border: none; color: var(--faint); cursor: pointer; font-size: 0.78rem; letter-spacing: 0.06em; display: flex; align-items: center; gap: 0.35rem; transition: color 0.2s; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+.ws-back:hover { color: var(--muted); }
+.ws-title-block { flex: 1; min-width: 0; }
+.ws-label { font-family: var(--heading-font); font-size: 0.95rem; font-weight: 300; font-style: italic; color: var(--muted); }
+.ws-session-name { font-size: 0.88rem; color: var(--text); font-weight: 400; outline: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; display: inline-block; max-width: 280px; }
+.ws-session-name:focus { border-bottom-color: var(--accent); }
+.ws-save-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--faint); letter-spacing: 0.06em; flex-shrink: 0; }
+.save-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--faint); transition: background 0.4s; }
+.save-dot.saving { background: var(--accent2); animation: saveBlink 1s ease-in-out infinite; }
+.save-dot.saved  { background: #7ac47a; }
+@keyframes saveBlink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.ws-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
+.btn-sm { padding: 0.45rem 1rem; border-radius: 2rem; font-family: 'DM Sans', sans-serif; font-size: 0.76rem; font-weight: 500; letter-spacing: 0.04em; cursor: pointer; transition: all 0.25s; border: 1px solid var(--border2); background: none; color: var(--muted); }
+.btn-sm:hover { color: var(--text); border-color: var(--muted); }
+.btn-sm.primary { background: var(--accent); border-color: var(--accent); color: var(--btn-text); }
+.btn-sm.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+/* SPLIT */
+.split { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+
+/* LEFT PANEL */
+.left-panel { width: 320px; flex-shrink: 0; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; background: var(--bg2); transition: background 0.35s; }
+.panel-sec { padding: 1.2rem 1.3rem; border-bottom: 1px solid var(--border); }
+.panel-sec:last-child { border-bottom: none; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.panel-lbl { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); margin-bottom: 0.9rem; display: flex; align-items: center; justify-content: space-between; }
+.brief-area { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 0.65rem; padding: 0.9rem 1rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 300; line-height: 1.65; resize: none; outline: none; min-height: 100px; transition: border-color 0.3s; caret-color: var(--accent2); }
+.brief-area::placeholder { color: var(--faint); font-style: italic; }
+.brief-area:focus { border-color: rgba(196,98,45,0.5); }
+
+/* PLATFORM PILLS */
+.p-pills { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.p-pill { padding: 0.3rem 0.75rem; border: 1px solid var(--border); border-radius: 2rem; font-size: 0.74rem; color: var(--muted); cursor: pointer; transition: all 0.22s; background: none; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 0.35rem; }
+.p-pill:hover { border-color: var(--border2); color: var(--text); }
+.p-pill.active { border-color: var(--accent); color: var(--accent2); background: rgba(196,98,45,0.08); }
+.p-pill .pill-check { opacity: 0; font-size: 0.6rem; transition: opacity 0.2s; }
+.p-pill.active .pill-check { opacity: 1; }
+
+/* KINDLING */
+.kindling-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.kindling-scroll { flex: 1; overflow-y: auto; padding: 0 1.3rem 1rem; }
+.kindling-scroll::-webkit-scrollbar { width: 3px; }
+.kindling-scroll::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 2px; }
+
+.spark-btn { width: 100%; padding: 0.6rem; border: 1px dashed rgba(196,98,45,0.3); border-radius: 0.65rem; background: none; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.76rem; letter-spacing: 0.08em; cursor: pointer; transition: all 0.25s; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.spark-btn:hover { border-color: var(--accent); background: rgba(196,98,45,0.05); }
+.spark-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.k-empty { text-align: center; padding: 1.5rem 0.5rem; font-size: 0.82rem; color: var(--faint); font-style: italic; line-height: 1.6; }
+.k-group { margin-bottom: 1.2rem; }
+.k-group-lbl { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.5rem; }
+.k-group-lbl::before { content: ''; display: block; width: 1rem; height: 1px; background: var(--faint); }
+.k-card { padding: 0.75rem 0.9rem; border: 1px solid var(--border); border-radius: 0.6rem; background: var(--surface); cursor: pointer; transition: all 0.25s; margin-bottom: 0.5rem; position: relative; overflow: hidden; }
+.k-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); opacity: 0; transition: opacity 0.25s; }
+.k-card:hover { border-color: rgba(196,98,45,0.4); }
+.k-card:hover::before { opacity: 1; }
+.k-card.used { opacity: 0.4; }
+.k-card-text { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+.k-card-text em { font-style: italic; color: var(--text); }
+.k-card-action { font-size: 0.62rem; color: var(--faint); margin-top: 0.4rem; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* API KEY PROMPT */
+.api-key-notice {
+  padding: 0.8rem 1rem; background: rgba(196,98,45,0.06); border: 1px solid rgba(196,98,45,0.2);
+  border-radius: 0.65rem; margin-bottom: 0.8rem;
+}
+.api-key-notice p { font-size: 0.76rem; color: var(--muted); margin-bottom: 0.6rem; line-height: 1.5; }
+.api-key-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 0.4rem; padding: 0.4rem 0.7rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.76rem; outline: none; transition: border-color 0.2s; }
+.api-key-input:focus { border-color: var(--accent); }
+.api-save-btn { margin-top: 0.5rem; font-size: 0.7rem; color: var(--accent); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; letter-spacing: 0.06em; }
+
+/* RIGHT PANEL */
+.right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* TABS */
+.platform-tabs { display: flex; align-items: center; padding: 0 1.4rem; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; background: var(--bg2); }
+.platform-tabs::-webkit-scrollbar { display: none; }
+.p-tab { padding: 0.8rem 1rem; font-size: 0.78rem; cursor: pointer; border-bottom: 2px solid transparent; color: var(--faint); transition: all 0.22s; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem; background: none; border-top: none; border-left: none; border-right: none; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+.p-tab:hover { color: var(--muted); }
+.p-tab.active { color: var(--text); border-bottom-color: var(--accent2); }
+.tab-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--faint); transition: background 0.3s; }
+.p-tab.has-content .tab-dot, .p-tab.active .tab-dot { background: var(--accent2); }
+.tabs-add { margin-left: auto; padding: 0.5rem; color: var(--faint); cursor: pointer; background: none; border: none; font-size: 1rem; transition: color 0.2s; flex-shrink: 0; }
+.tabs-add:hover { color: var(--accent2); }
+
+/* WRITING AREA */
+.writing-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 1.4rem; }
+
+.voice-bar { display: flex; align-items: center; gap: 0.8rem; padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: 0.65rem; background: var(--surface); margin-bottom: 1.2rem; flex-shrink: 0; transition: border-color 0.3s; }
+.voice-bar:hover { border-color: var(--border2); }
+.voice-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; animation: vdPulse 3s ease-in-out infinite; }
+@keyframes vdPulse { 0%,100%{opacity:0.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.2)} }
+.voice-label { font-size: 0.7rem; color: var(--faint); letter-spacing: 0.06em; text-transform: uppercase; }
+.voice-name { font-size: 0.82rem; color: var(--muted); font-style: italic; flex: 1; }
+.voice-link { font-size: 0.66rem; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: color 0.2s; background: none; border: none; font-family: 'DM Sans', sans-serif; }
+.voice-link:hover { color: var(--accent2); }
+
+.platform-tip { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.6rem 0.9rem; border-radius: 0.55rem; background: rgba(196,98,45,0.05); border: 1px solid rgba(196,98,45,0.12); margin-bottom: 1rem; flex-shrink: 0; }
+.tip-text { font-size: 0.78rem; color: var(--muted); line-height: 1.5; font-style: italic; }
+
+.post-textarea-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.post-textarea { flex: 1; width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 0.85rem; padding: 1.2rem 1.3rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 300; line-height: 1.75; resize: none; outline: none; transition: border-color 0.3s; caret-color: var(--accent2); min-height: 0; }
+.post-textarea::placeholder { color: var(--faint); font-style: italic; }
+.post-textarea:focus { border-color: rgba(196,98,45,0.4); }
+.post-textarea.k-hover { border-color: var(--accent); border-style: dashed; }
+
+.char-bar { display: flex; align-items: center; padding: 0.6rem 0.2rem 0; flex-shrink: 0; }
+.char-count { font-size: 0.72rem; color: var(--faint); letter-spacing: 0.04em; }
+.char-count.warn { color: #e8c44a; }
+.char-count.over { color: #e84a4a; }
+.char-fill-wrap { flex: 1; height: 3px; background: var(--surface2); border-radius: 2px; margin: 0 1rem; overflow: hidden; }
+.char-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.2s, background 0.3s; }
+.char-fill.warn { background: #e8c44a; }
+.char-fill.over { background: #e84a4a; }
+.char-right { font-size: 0.68rem; color: var(--faint); font-style: italic; }
+
+/* ACTION BAR */
+.action-bar { display: flex; align-items: center; gap: 0.8rem; padding: 0.9rem 1.4rem; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg2); flex-wrap: wrap; }
+.action-bar-left { display: flex; gap: 0.5rem; flex: 1; align-items: center; overflow-x: auto; }
+.action-bar-right { display: flex; gap: 0.6rem; align-items: center; }
+.tone-chip { padding: 0.28rem 0.7rem; border: 1px solid var(--border); border-radius: 2rem; font-size: 0.7rem; color: var(--faint); cursor: pointer; transition: all 0.2s; background: none; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+.tone-chip:hover { border-color: var(--border2); color: var(--muted); }
+.tone-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(196,98,45,0.07); }
+.schedule-btn { padding: 0.55rem 1.3rem; background: var(--accent); color: var(--btn-text); border: none; border-radius: 2rem; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; gap: 0.4rem; }
+.schedule-btn:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 5px 16px rgba(196,98,45,0.3); }
+.schedule-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.save-draft-btn { padding: 0.55rem 1rem; background: none; color: var(--muted); border: 1px solid var(--border); border-radius: 2rem; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; cursor: pointer; transition: all 0.25s; }
+.save-draft-btn:hover { border-color: var(--border2); color: var(--text); }
+
+/* APPROVAL MODAL */
+.modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 1.2rem; padding: 2rem; width: 90%; max-width: 560px; max-height: 80vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s; }
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-title { font-family: var(--heading-font); font-size: 1.6rem; font-weight: 300; font-style: italic; margin-bottom: 0.4rem; }
+.modal-sub { font-size: 0.78rem; color: var(--faint); margin-bottom: 1.6rem; letter-spacing: 0.04em; }
+.approval-items { display: flex; flex-direction: column; gap: 1rem; }
+.approval-item { border: 1px solid var(--border); border-radius: 0.75rem; overflow: hidden; }
+.approval-header { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border); }
+.approval-platform-name { font-size: 0.78rem; font-weight: 500; flex: 1; }
+.approval-edit { font-size: 0.65rem; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; transition: color 0.2s; }
+.approval-edit:hover { color: var(--accent2); }
+.approval-content { padding: 0.9rem 1rem; font-size: 0.86rem; color: var(--muted); line-height: 1.65; font-style: italic; white-space: pre-wrap; }
+.approval-empty { padding: 0.9rem 1rem; font-size: 0.8rem; color: var(--faint); font-style: italic; }
+.modal-actions { display: flex; gap: 0.7rem; margin-top: 1.6rem; justify-content: flex-end; }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .split { flex-direction: column; overflow-y: auto; height: auto; }
+  .left-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); overflow: visible; height: auto; }
+  .kindling-wrap { max-height: 280px; }
+  .right-panel { overflow: visible; height: auto; }
+  .writing-area { height: auto; overflow: visible; }
+  .post-textarea { min-height: 180px; flex: none; }
+  html, body { overflow: auto; height: auto; }
+  .app-shell { height: auto; min-height: 100vh; }
+  .workspace { height: auto; overflow: visible; }
+  .action-bar { position: sticky; bottom: 0; z-index: 10; }
+}
+@media (max-width: 599px) {
+  .ws-actions .btn-sm:not(.primary) { display: none; }
+  .left-panel { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="sidebar-mount"></div>
+  <div id="theme-panel-mount"></div>
+
+  <div class="workspace">
+
+    <!-- TOP BAR -->
+    <div class="ws-top">
+      <button class="ws-back" onclick="navigateTo('dashboard.html')">← Hearth</button>
+      <div class="ws-title-block">
+        <div class="ws-label">voice workspace</div>
+        <span class="ws-session-name" id="session-name" contenteditable="true" spellcheck="false">New session</span>
+      </div>
+      <div class="ws-save-status">
+        <div class="save-dot saved" id="save-dot"></div>
+        <span id="save-text">Kept safe.</span>
+      </div>
+      <div class="ws-actions">
+        <button class="btn-sm" onclick="openApproval()">Review all →</button>
+        <button class="btn-sm primary" onclick="openApproval()">✦ Approve &amp; schedule</button>
+      </div>
+    </div>
+
+    <!-- SPLIT -->
+    <div class="split">
+
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
+
+        <!-- BRIEF -->
+        <div class="panel-sec">
+          <div class="panel-lbl">The brief <span>📝</span></div>
+          <textarea class="brief-area" id="brief-area" placeholder="What's the core message? Just the thought — don't overthink it..." oninput="onBriefInput()"></textarea>
+        </div>
+
+        <!-- PLATFORMS -->
+        <div class="panel-sec">
+          <div class="panel-lbl">Writing for</div>
+          <div class="p-pills" id="p-pills">
+            <button class="p-pill active" data-platform="discord" onclick="togglePlatform(this,'discord')"><span>💬</span>Discord<span class="pill-check">✓</span></button>
+            <button class="p-pill active" data-platform="reddit"  onclick="togglePlatform(this,'reddit')"><span>🟠</span>Reddit<span class="pill-check">✓</span></button>
+            <button class="p-pill active" data-platform="bluesky" onclick="togglePlatform(this,'bluesky')"><span>🦋</span>Bluesky<span class="pill-check">✓</span></button>
+            <button class="p-pill" data-platform="instagram" onclick="togglePlatform(this,'instagram')"><span>📷</span>Instagram<span class="pill-check">✓</span></button>
+            <button class="p-pill" data-platform="twitter"   onclick="togglePlatform(this,'twitter')"><span>🐦</span>Twitter<span class="pill-check">✓</span></button>
+          </div>
+        </div>
+
+        <!-- KINDLING -->
+        <div class="panel-sec">
+          <div class="panel-lbl">Kindling <span style="font-size:0.58rem;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase">sparks, not scripts</span></div>
+          <button class="spark-btn" id="spark-btn" onclick="generateKindling()">🔥 Need a spark?</button>
+        </div>
+        <div class="kindling-wrap">
+          <div class="kindling-scroll" id="kindling-scroll">
+            <div class="k-empty" id="k-empty">Drop your brief above and hit "Need a spark?" — ideas to react to, not copy.</div>
+            <div id="k-cards"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-panel">
+
+        <!-- TABS -->
+        <div class="platform-tabs" id="platform-tabs">
+          <button class="p-tab active" data-tab="discord" onclick="switchTab('discord')"><span>💬</span>Discord<span class="tab-dot"></span></button>
+          <button class="p-tab" data-tab="reddit"  onclick="switchTab('reddit')"><span>🟠</span>Reddit<span class="tab-dot"></span></button>
+          <button class="p-tab" data-tab="bluesky" onclick="switchTab('bluesky')"><span>🦋</span>Bluesky<span class="tab-dot"></span></button>
+          <button class="tabs-add">+</button>
+        </div>
+
+        <!-- WRITING AREA -->
+        <div class="writing-area">
+          <div class="voice-bar">
+            <div class="voice-dot"></div>
+            <span class="voice-label">Writing in</span>
+            <span class="voice-name" id="voice-name">your Discord voice</span>
+            <button class="voice-link" onclick="showToast('Voice profiles coming soon.')">Edit profile →</button>
+          </div>
+          <div class="platform-tip">
+            <span>💡</span>
+            <span class="tip-text" id="tip-text">Discord wants energy. Short sentences. Emojis land well. Lead with the feeling, not the details.</span>
+          </div>
+          <div class="post-textarea-wrap">
+            <textarea class="post-textarea" id="post-textarea" placeholder="The words are yours. Write something your community will feel..." oninput="onTextInput()" spellcheck="true"></textarea>
+            <div class="char-bar">
+              <span class="char-count" id="char-count">0 / 2000</span>
+              <div class="char-fill-wrap"><div class="char-fill" id="char-fill" style="width:0%"></div></div>
+              <span class="char-right" id="char-right">no limit</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTION BAR -->
+        <div class="action-bar">
+          <div class="action-bar-left">
+            <span style="font-size:0.68rem;color:var(--faint);letter-spacing:0.08em;text-transform:uppercase;flex-shrink:0">Tone</span>
+            <button class="tone-chip active" onclick="setTone(this)">Hype</button>
+            <button class="tone-chip" onclick="setTone(this)">Warm</button>
+            <button class="tone-chip" onclick="setTone(this)">Informative</button>
+            <button class="tone-chip" onclick="setTone(this)">Casual</button>
+            <button class="tone-chip" onclick="setTone(this)">Celebratory</button>
+          </div>
+          <div class="action-bar-right">
+            <button class="save-draft-btn" onclick="saveDraft()">Save draft</button>
+            <button class="schedule-btn" id="schedule-btn" onclick="openApproval()" disabled>Schedule →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APPROVAL MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleModalClick(event)">
+  <div class="modal">
+    <div class="modal-title">Before the spark flies.</div>
+    <div class="modal-sub">These are your words. Review each one before they reach your community.</div>
+    <div class="approval-items" id="approval-items"></div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="closeApproval()">Keep writing</button>
+      <button class="btn-sm primary" onclick="confirmSchedule()">✦ Looks good — schedule it</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared/storage.js"></script>
+<script src="shared/theme.js"></script>
+<script src="shared/nav.js"></script>
+<script>
+  initTheme();
+  mountSidebar('workspace');
+  mountThemePanel();
+  setTimeout(syncThemePanelUI, 50);
+
+  // ── PLATFORM CONFIG ──
+  const PLATFORMS = {
+    discord:   { icon:'💬', name:'Discord',   limit:2000,  tip:'Discord wants energy. Short sentences. Emojis land well. Lead with the feeling, not the details.', voice:'your Discord voice' },
+    reddit:    { icon:'🟠', name:'Reddit',    limit:40000, tip:'Reddit wants context. Write for someone who just found the community. A little more formal, a little more thorough.', voice:'your Reddit voice' },
+    bluesky:   { icon:'🦋', name:'Bluesky',  limit:300,   tip:'Bluesky is witty and warm. Short, punchy, a hint of personality. Hashtags are optional here.', voice:'your Bluesky voice' },
+    instagram: { icon:'📷', name:'Instagram', limit:2200,  tip:"Instagram needs a hook in the first line — that's all most people read. Put the most important thing first.", voice:'your Instagram voice' },
+    twitter:   { icon:'🐦', name:'Twitter',   limit:280,   tip:'280 characters. Every word earns its place. Make the first five words impossible to scroll past.', voice:'your Twitter voice' },
+  };
+
+  // ── STATE ──
+  let activeTab = 'discord';
+  let contents  = {};
+  let activePlatforms = ['discord','reddit','bluesky'];
+  let saveTimer = null;
+
+  // Load saved state
+  (function loadSaved() {
+    const s = HS.getSession();
+    const n = document.getElementById('session-name');
+    if (s.name) n.textContent = s.name;
+    if (s.brief) document.getElementById('brief-area').value = s.brief;
+    const d = HS.getDrafts();
+    Object.assign(contents, d);
+    loadTab(activeTab);
+  })();
+
+  // Session name save
+  document.getElementById('session-name').addEventListener('input', function() {
+    HS.setSession({ name: this.textContent.trim() });
+  });
+
+  // ── BRIEF ──
+  function onBriefInput() {
+    HS.setSession({ brief: document.getElementById('brief-area').value });
+    triggerSave();
+  }
+
+  // ── PLATFORMS ──
+  function togglePlatform(el, platform) {
+    el.classList.toggle('active');
+    const isActive = el.classList.contains('active');
+    if (isActive) { if (!activePlatforms.includes(platform)) activePlatforms.push(platform); }
+    else { activePlatforms = activePlatforms.filter(p => p !== platform); }
+    rebuildTabs();
+  }
+
+  function rebuildTabs() {
+    const container = document.getElementById('platform-tabs');
+    const addBtn = container.querySelector('.tabs-add');
+    container.querySelectorAll('.p-tab').forEach(t => t.remove());
+    activePlatforms.forEach(p => {
+      const pl = PLATFORMS[p];
+      const btn = document.createElement('button');
+      btn.className = 'p-tab' + (p === activeTab ? ' active' : '') + (contents[p] ? ' has-content' : '');
+      btn.dataset.tab = p;
+      btn.innerHTML = `<span>${pl.icon}</span>${pl.name}<span class="tab-dot"></span>`;
+      btn.onclick = () => switchTab(p);
+      container.insertBefore(btn, addBtn);
+    });
+    if (!activePlatforms.includes(activeTab) && activePlatforms.length > 0) switchTab(activePlatforms[0]);
+  }
+
+  // ── TABS ──
+  function loadTab(platform) {
+    const pl = PLATFORMS[platform];
+    document.getElementById('post-textarea').value = contents[platform] || '';
+    document.getElementById('post-textarea').placeholder = `The words are yours. Write something your ${pl.name} community will feel...`;
+    document.getElementById('voice-name').textContent = pl.voice;
+    document.getElementById('tip-text').textContent = pl.tip;
+    updateCharCount();
+    updateScheduleBtn();
+  }
+
+  function switchTab(platform) {
+    contents[activeTab] = document.getElementById('post-textarea').value;
+    HS.setDraft(activeTab, contents[activeTab]);
+    activeTab = platform;
+    loadTab(platform);
+    document.querySelectorAll('.p-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === platform));
+  }
+
+  // ── TEXT ──
+  function onTextInput() {
+    contents[activeTab] = document.getElementById('post-textarea').value;
+    updateCharCount(); updateScheduleBtn(); markTabContent();
+    triggerSave();
+  }
+
+  function updateCharCount() {
+    const val = document.getElementById('post-textarea').value;
+    const len = val.length;
+    const limit = PLATFORMS[activeTab].limit;
+    const pct = Math.min((len/limit)*100, 100);
+    const fill  = document.getElementById('char-fill');
+    const count = document.getElementById('char-count');
+    const right = document.getElementById('char-right');
+    count.textContent = limit >= 10000 ? `${len} chars` : `${len} / ${limit}`;
+    if (len > limit) {
+      fill.style.width='100%'; fill.className='char-fill over';
+      count.className='char-count over'; right.textContent=`${len-limit} over`;
+    } else if (len > limit*0.85) {
+      fill.style.width=pct+'%'; fill.className='char-fill warn';
+      count.className='char-count warn'; right.textContent=`${limit-len} left`;
+    } else {
+      fill.style.width=pct+'%'; fill.className='char-fill';
+      count.className='char-count'; right.textContent=limit>=10000?'no limit':`${limit-len} left`;
+    }
+  }
+
+  function markTabContent() {
+    document.querySelectorAll('.p-tab').forEach(t => {
+      if (t.dataset.tab) t.classList.toggle('has-content', !!(contents[t.dataset.tab]));
+    });
+  }
+
+  function updateScheduleBtn() {
+    const hasAny = activePlatforms.some(p => contents[p] && contents[p].trim());
+    document.getElementById('schedule-btn').disabled = !hasAny;
+  }
+
+  function setTone(el) {
+    document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── SAVE ──
+  function triggerSave() {
+    const dot = document.getElementById('save-dot');
+    const txt = document.getElementById('save-text');
+    dot.className = 'save-dot saving'; txt.textContent = 'Tending your hearth...';
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      activePlatforms.forEach(p => HS.setDraft(p, contents[p] || ''));
+      dot.className = 'save-dot saved'; txt.textContent = 'Kept safe.';
+    }, 1200);
+  }
+
+  function saveDraft() {
+    triggerSave();
+    const btn = document.querySelector('.save-draft-btn');
+    btn.textContent = '✓ Draft saved';
+    setTimeout(() => btn.textContent = 'Save draft', 2000);
+  }
+
+  // ── KINDLING ── (static — no API key needed)
+  function generateKindling() {
+    const brief = document.getElementById('brief-area').value.trim();
+    const btn   = document.getElementById('spark-btn');
+    if (!brief) { showToast('Add a brief first — even one sentence helps.'); return; }
+
+    btn.disabled = true; btn.innerHTML = '🌱 Finding your sparks...';
+
+    // Extract a few key words from the brief for more relevant-feeling sparks
+    const words = brief.split(' ').filter(w => w.length > 4).slice(0, 3).join(', ');
+
+    setTimeout(() => {
+      renderKindling({
+        angles: [
+          { text: `The <em>build-up angle</em> — what's been building in this community that makes this moment matter? Write for the people who've been here since the beginning.` },
+          { text: `The <em>invitation angle</em> — someone is reading this for the very first time. What do they need to feel welcome, not overwhelmed?` },
+          { text: `The <em>emotional core angle</em> — forget the details for a second. What do you actually want your community to <em>feel</em> when they read this?` },
+        ],
+        openers: [
+          { text: `"Something's been building here. ${brief.split('.')[0].trim()}."` },
+          { text: `"This one's for everyone who showed up every single day."` },
+          { text: `"Nobody's ready. That's what makes it worth showing up for."` },
+        ],
+        questions: [
+          { text: `What does someone need to <em>know</em>? What do you want them to <em>feel</em>? What's the one thing you want them to <em>do</em>?` },
+          { text: `If you could only say one sentence about this — the truest, most honest one — what would it be?` },
+        ],
+        toneNudges: activePlatforms.slice(0,2).map(p => ({
+          platform: PLATFORMS[p].name,
+          text: PLATFORMS[p].tip,
+        })),
+      });
+      btn.disabled = false; btn.innerHTML = '🔥 Refresh sparks';
+    }, 700);
+  }
+
+  function renderKindling(data) {
+    document.getElementById('k-empty').style.display = 'none';
+    const container = document.getElementById('k-cards');
+    container.innerHTML = '';
+    const groups = [
+      { key:'angles',     label:'Angles to explore',             type:'angle',    action:'Use as starting point' },
+      { key:'openers',    label:'Opening line sparks',            type:'opener',   action:'Steal this opener' },
+      { key:'questions',  label:'Questions to write through',     type:'question', action:'Use as framework' },
+      { key:'toneNudges', label:'Tone nudges for your platforms',  type:'tone',     action:'Keep in mind' },
+    ];
+    groups.forEach(({ key, label, type, action }) => {
+      const items = data[key]; if (!items || !items.length) return;
+      const group = document.createElement('div');
+      group.className = 'k-group';
+      group.innerHTML = `<div class="k-group-lbl">${label}</div>`;
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'k-card';
+        card.onclick = function() { useKindling(this, type); };
+        let text = item.text || '';
+        if (key === 'toneNudges' && item.platform) text = `<em>${item.platform}</em> — ${text}`;
+        card.innerHTML = `<div class="k-card-text">${text}</div><div class="k-card-action">✦ ${action}</div>`;
+        group.appendChild(card);
+      });
+      container.appendChild(group);
+    });
+  }
+
+  function useKindling(el, type) {
+    el.classList.add('used');
+    const ta = document.getElementById('post-textarea');
+    ta.classList.add('k-hover');
+    setTimeout(() => ta.classList.remove('k-hover'), 600);
+    const msgs = { angle:'Angle noted. Now make it yours.', opener:'Good opener stolen. Now finish the thought.', question:'Framework in mind. Write through it.', tone:'Tone dialled in. Feel the difference as you write.' };
+    showToast(msgs[type] || 'Spark noted.');
+  }
+
+  // ── APPROVAL ──
+  function openApproval() {
+    contents[activeTab] = document.getElementById('post-textarea').value;
+    const container = document.getElementById('approval-items');
+    container.innerHTML = '';
+    activePlatforms.forEach(p => {
+      const pl = PLATFORMS[p];
+      const item = document.createElement('div');
+      item.className = 'approval-item';
+      item.innerHTML = `
+        <div class="approval-header">
+          <span>${pl.icon}</span>
+          <span class="approval-platform-name">${pl.name}</span>
+          <button class="approval-edit" onclick="closeApproval();switchTab('${p}')">Edit →</button>
+        </div>
+        ${contents[p]?.trim()
+          ? `<div class="approval-content">${escHtml(contents[p])}</div>`
+          : `<div class="approval-empty">Nothing written yet for ${pl.name}.</div>`}`;
+      container.appendChild(item);
+    });
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+  function closeApproval() { document.getElementById('modal-overlay').classList.remove('open'); }
+  function handleModalClick(e) { if (e.target === document.getElementById('modal-overlay')) closeApproval(); }
+  function confirmSchedule() {
+    closeApproval();
+    HS.clearDrafts();
+    const dot = document.getElementById('save-dot');
+    const txt = document.getElementById('save-text');
+    dot.className = 'save-dot saved';
+    txt.textContent = 'Sent. Your community just grew a little warmer.';
+    setTimeout(() => txt.textContent = 'Kept safe.', 5000);
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  // Init char count
+  updateCharCount();
+</script>
+</body>
+</html>
