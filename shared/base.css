@@ -172,14 +172,14 @@ body.page-enter { opacity: 0; transform: translateY(8px);  }
 }
 .tp-overlay.open { opacity: 1; pointer-events: all; }
 .tp-panel {
-  position: fixed; top: 0; left: var(--nav-w); bottom: 0; z-index: 201;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 201;
   width: 300px; background: var(--bg2); border-right: 1px solid var(--border2);
   padding: 1.8rem 1.4rem; display: flex; flex-direction: column;
   gap: 1.1rem; overflow-y: auto;
   transition: transform 0.35s cubic-bezier(0.34,1.2,0.64,1);
-  transform: translateX(-110%);
+  transform: translateX(-100%);
 }
-.tp-panel.open { transform: translateX(0); }
+.tp-panel.open { transform: translateX(var(--nav-w)); }
 .tp-close {
   position: absolute; top: 1.2rem; right: 1.2rem;
   background: none; border: none; color: var(--faint);
