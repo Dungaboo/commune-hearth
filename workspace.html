@@ -258,11 +258,10 @@ html, body { height: 100%; overflow: hidden; }
 
         <!-- WRITING AREA -->
         <div class="writing-area">
-          <div class="voice-bar">
+          <!-- ROTATING PLATFORM STAT -->
+          <div class="voice-bar" id="platform-stat-bar">
             <div class="voice-dot"></div>
-            <span class="voice-label">Writing in</span>
-            <span class="voice-name" id="voice-name">your Discord voice</span>
-            <button class="voice-link" onclick="showToast('Voice profiles coming soon.')">Edit profile →</button>
+            <span class="voice-name" id="platform-stat-text">Discord · last posted 2 hours ago</span>
           </div>
           <div class="platform-tip">
             <span>💡</span>
@@ -280,15 +279,7 @@ html, body { height: 100%; overflow: hidden; }
 
         <!-- ACTION BAR -->
         <div class="action-bar">
-          <div class="action-bar-left">
-            <span style="font-size:0.68rem;color:var(--faint);letter-spacing:0.08em;text-transform:uppercase;flex-shrink:0">Tone</span>
-            <button class="tone-chip active" onclick="setTone(this)">Hype</button>
-            <button class="tone-chip" onclick="setTone(this)">Warm</button>
-            <button class="tone-chip" onclick="setTone(this)">Informative</button>
-            <button class="tone-chip" onclick="setTone(this)">Casual</button>
-            <button class="tone-chip" onclick="setTone(this)">Celebratory</button>
-          </div>
-          <div class="action-bar-right">
+          <div class="action-bar-right" style="margin-left:auto">
             <button class="save-draft-btn" onclick="saveDraft()">Save draft</button>
             <button class="schedule-btn" id="schedule-btn" onclick="openApproval()" disabled>Schedule →</button>
           </div>
@@ -388,10 +379,10 @@ html, body { height: 100%; overflow: hidden; }
     const pl = PLATFORMS[platform];
     document.getElementById('post-textarea').value = contents[platform] || '';
     document.getElementById('post-textarea').placeholder = `The words are yours. Write something your ${pl.name} community will feel...`;
-    document.getElementById('voice-name').textContent = pl.voice;
     document.getElementById('tip-text').textContent = pl.tip;
     updateCharCount();
     updateScheduleBtn();
+    startStatRotation(platform);
   }
 
   function switchTab(platform) {
@@ -441,9 +432,76 @@ html, body { height: 100%; overflow: hidden; }
     document.getElementById('schedule-btn').disabled = !hasAny;
   }
 
-  function setTone(el) {
-    document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
+  function setTone(el) {} // retired — kept to avoid any lingering onclick errors
+
+  // ── ROTATING PLATFORM STATS ──────────────────────────────
+  const PLATFORM_STATS = {
+    discord:   [
+      'Discord · last posted 2 hours ago',
+      'Discord · your most active platform',
+      'Discord · 8 posts this week',
+      'Discord · community most active after 7pm',
+      'Discord · shortest posts perform best here',
+    ],
+    reddit:    [
+      'Reddit · last posted yesterday',
+      'Reddit · context-first posts get the most traction',
+      'Reddit · 3 posts this week',
+      'Reddit · longer form works well here',
+      'Reddit · your quietest platform this week',
+    ],
+    bluesky:   [
+      'Bluesky · last posted 3 days ago',
+      'Bluesky · your newest platform',
+      'Bluesky · wit lands well here',
+      'Bluesky · 2 posts this week',
+      'Bluesky · growing faster than expected',
+    ],
+    instagram: [
+      'Instagram · last posted 4 days ago',
+      'Instagram · hook in the first line — always',
+      'Instagram · visual posts outperform text here',
+      'Instagram · 1 post this week',
+      'Instagram · your highest reach platform',
+    ],
+    twitter:   [
+      'Twitter · last posted 5 days ago',
+      'Twitter · 280 characters — every word earns its place',
+      'Twitter · 2 posts this week',
+      'Twitter · first 5 words decide everything',
+      'Twitter · your lowest engagement platform lately',
+    ],
+  };
+
+  let statRotateTimer = null;
+  let statIndex = 0;
+
+  function startStatRotation(platform) {
+    clearInterval(statRotateTimer);
+    statIndex = Math.floor(Math.random() * PLATFORM_STATS[platform].length);
+    updateStatBar(platform);
+    statRotateTimer = setInterval(() => {
+      statIndex = (statIndex + 1) % PLATFORM_STATS[platform].length;
+      rotateStat(platform);
+    }, 4000);
+  }
+
+  function updateStatBar(platform) {
+    const el = document.getElementById('platform-stat-text');
+    if (el) el.textContent = PLATFORM_STATS[platform]?.[statIndex] || '';
+  }
+
+  function rotateStat(platform) {
+    const bar = document.getElementById('platform-stat-bar');
+    const el  = document.getElementById('platform-stat-text');
+    if (!bar || !el) return;
+    // Fade out, swap, fade in
+    el.style.transition = 'opacity 0.3s';
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.textContent = PLATFORM_STATS[platform]?.[statIndex] || '';
+      el.style.opacity = '1';
+    }, 320);
   }
 
   // ── SAVE ──
