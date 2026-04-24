@@ -29,6 +29,12 @@ nav {
 }
 .nav-cta:hover { background: var(--accent); border-color: var(--accent); color: var(--btn-text); }
 
+/* EMBER CANVAS */
+#ember-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+}
+
 /* HERO */
 .hero {
   min-height: 100vh; display: flex; flex-direction: column;
@@ -248,6 +254,7 @@ footer p { font-size: 0.74rem; color: var(--faint); letter-spacing: 0.04em; }
 <!-- HERO -->
 <section class="hero">
   <div class="hero-glow"></div>
+  <canvas id="ember-canvas"></canvas>
   <p class="eyebrow">For community managers, by one</p>
   <h1>Tend your <em>community.</em> Not your spreadsheets.</h1>
   <p class="hero-sub">Commune Hearth handles the mechanics of multi-platform community management so you can focus on the thing that actually matters — your people.</p>
@@ -367,8 +374,8 @@ footer p { font-size: 0.74rem; color: var(--faint); letter-spacing: 0.04em; }
 <script src="shared/theme.js"></script>
 <script src="shared/nav.js"></script>
 <script>
-  // Theme
-  initTheme();
+  // Landing page always loads in Ember — themed experience starts at onboarding
+  applyThemeVars('ember', {});
   mountThemePanel();
 
   // Redirect if already onboarded
@@ -406,6 +413,116 @@ footer p { font-size: 0.74rem; color: var(--faint); letter-spacing: 0.04em; }
     });
   }, { threshold: 0.08 });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // ── HERO EMBERS ──────────────────────────────────────────
+  (function initEmbers() {
+    const canvas = document.getElementById('ember-canvas');
+    const ctx    = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Colour palette — pulls accent colours to match theme
+    function getEmberColors() {
+      const s = getComputedStyle(document.documentElement);
+      return [
+        s.getPropertyValue('--accent').trim()  || '#c4622d',
+        s.getPropertyValue('--accent2').trim() || '#e8924a',
+        s.getPropertyValue('--fire-bright').trim() || '#ffe066',
+      ];
+    }
+
+    // Spawn embers only in the RIGHT half of the hero
+    // so they don't clash with the headline text
+    function createEmber() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const colors = getEmberColors();
+      return {
+        x:     w * 0.52 + Math.random() * w * 0.44,  // right 44% of canvas
+        y:     h * 0.6  + Math.random() * h * 0.35,  // start near bottom
+        r:     1.5 + Math.random() * 5,               // varied sizes
+        vx:    (Math.random() - 0.5) * 0.6,           // gentle sideways drift
+        vy:    -(0.4 + Math.random() * 1.2),           // float upward
+        alpha: 0,
+        maxAlpha: 0.15 + Math.random() * 0.45,        // some bright, some faint
+        fadeIn:  true,
+        life:    0,
+        maxLife: 120 + Math.random() * 180,           // frames alive
+        color:   colors[Math.floor(Math.random() * colors.length)],
+        // Slight wobble
+        wobble:  (Math.random() - 0.5) * 0.02,
+      };
+    }
+
+    let embers = [];
+    // Stagger initial spawn so they don't all appear at once
+    for (let i = 0; i < 28; i++) {
+      const e = createEmber();
+      e.life = Math.random() * e.maxLife; // start at random life point
+      e.alpha = e.maxAlpha * (e.life / e.maxLife);
+      embers.push(e);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Occasionally spawn a fresh ember
+      if (Math.random() < 0.08 && embers.length < 35) {
+        embers.push(createEmber());
+      }
+
+      embers = embers.filter(e => e.life < e.maxLife);
+
+      embers.forEach(e => {
+        e.life++;
+        e.vx += e.wobble;
+        e.x  += e.vx;
+        e.y  += e.vy;
+
+        // Fade in then fade out
+        const halfLife = e.maxLife / 2;
+        if (e.life < halfLife * 0.3) {
+          e.alpha = e.maxAlpha * (e.life / (halfLife * 0.3));
+        } else if (e.life > halfLife * 1.4) {
+          e.alpha = e.maxAlpha * (1 - (e.life - halfLife * 1.4) / (e.maxLife - halfLife * 1.4));
+        } else {
+          e.alpha = e.maxAlpha;
+        }
+
+        e.alpha = Math.max(0, Math.min(e.maxAlpha, e.alpha));
+
+        // Draw the ember — slightly oval, hand-drawn feel
+        ctx.save();
+        ctx.globalAlpha = e.alpha;
+        ctx.beginPath();
+        ctx.ellipse(e.x, e.y, e.r, e.r * 0.65, e.life * 0.02, 0, Math.PI * 2);
+        ctx.fillStyle = e.color;
+        ctx.fill();
+
+        // Tiny glow around larger embers
+        if (e.r > 3) {
+          const grd = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.r * 2.5);
+          grd.addColorStop(0, e.color + '40');
+          grd.addColorStop(1, 'transparent');
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.r * 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = grd;
+          ctx.fill();
+        }
+
+        ctx.restore();
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  })();
 </script>
 </body>
 </html>
