@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commune Hearth — Welcome</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+html, body { height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+
+.screen {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 100%; max-width: 520px; padding: 2rem;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.screen.active   { opacity: 1; pointer-events: all; transform: translate(-50%,-50%) translateY(0); }
+.screen.exit-up  { opacity: 0; transform: translate(-50%, calc(-50% - 40px)); pointer-events: none; }
+.screen.enter-up { transform: translate(-50%, calc(-50% + 40px)); }
+
+/* PROGRESS */
+.progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: var(--accent); transition: width 0.5s ease; z-index: 100; opacity: 0.7; }
+.back-btn {
+  position: fixed; top: 1.5rem; left: 1.5rem; z-index: 100;
+  background: none; border: none; color: var(--faint); cursor: pointer;
+  font-size: 0.78rem; letter-spacing: 0.08em; font-family: 'DM Sans', sans-serif;
+  display: none; align-items: center; gap: 0.4rem; transition: color 0.2s;
+}
+.back-btn:hover { color: var(--muted); }
+.back-btn.visible { display: flex; }
+
+/* DOTS */
+.step-dots { display: flex; gap: 0.45rem; margin-bottom: 2.5rem; justify-content: center; }
+.dot { width: 0.35rem; height: 0.35rem; border-radius: 50%; background: var(--faint); transition: all 0.4s; }
+.dot.active { background: var(--accent); width: 1.2rem; border-radius: 0.2rem; }
+.dot.done   { background: var(--muted); }
+
+/* LOGO */
+.hearth-logo {
+  font-family: var(--heading-font); font-size: 1.1rem; font-weight: 600;
+  letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 3rem; opacity: 0.7;
+}
+.hearth-logo span { font-weight: 300; font-style: italic; color: var(--muted); }
+
+/* ARRIVAL */
+.arrival-symbol { width: 80px; height: 80px; margin: 0 auto 2.5rem; position: relative; }
+.arrival-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid rgba(232,146,74,0.2);
+  animation: ringPulse 3s ease-in-out infinite;
+}
+.arrival-ring:nth-child(2) { inset: 12px; animation-delay: 0.4s; border-color: rgba(232,146,74,0.3); }
+.arrival-ring:nth-child(3) { inset: 24px; animation-delay: 0.8s; border-color: rgba(232,146,74,0.5); }
+.arrival-core {
+  position: absolute; inset: 34px; border-radius: 50%;
+  background: radial-gradient(circle, var(--accent2), var(--accent));
+  box-shadow: 0 0 20px rgba(232,146,74,0.6);
+  animation: corePulse 3s ease-in-out infinite;
+}
+@keyframes ringPulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+@keyframes corePulse { 0%,100%{box-shadow:0 0 20px rgba(232,146,74,0.6)} 50%{box-shadow:0 0 30px rgba(232,146,74,0.9)} }
+
+.arrival-headline {
+  font-family: var(--heading-font); font-size: clamp(2.4rem,6vw,3.2rem);
+  font-weight: 300; font-style: italic; line-height: 1.2; margin-bottom: 1.2rem;
+}
+.arrival-sub { font-size: 0.95rem; color: var(--muted); line-height: 1.7; max-width: 34ch; margin: 0 auto 3rem; }
+
+/* QUESTIONS */
+.screen-q {
+  font-family: var(--heading-font); font-size: clamp(1.8rem,4vw,2.4rem);
+  font-weight: 300; line-height: 1.25; margin-bottom: 0.6rem;
+}
+.screen-q em { font-style: italic; color: var(--accent); }
+.screen-hint { font-size: 0.82rem; color: var(--faint); margin-bottom: 2.2rem; }
+
+/* BUTTONS */
+.btn {
+  background: var(--accent); color: var(--btn-text); border: none;
+  padding: 0.85rem 2.5rem; border-radius: 3rem; font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 500; letter-spacing: 0.04em;
+  cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.5rem;
+}
+.btn:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(196,98,45,0.35); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* INPUT */
+.text-input {
+  width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 0.75rem; padding: 1rem 1.4rem; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 1.05rem; font-weight: 300;
+  outline: none; transition: all 0.3s; text-align: center; margin-bottom: 1.8rem;
+  caret-color: var(--accent2);
+}
+.text-input::placeholder { color: var(--faint); font-style: italic; }
+.text-input:focus { border-color: var(--accent); background: rgba(196,98,45,0.03); }
+
+/* TYPE GRID */
+.type-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; width: 100%; margin-bottom: 2rem; }
+.type-card {
+  padding: 1.1rem 0.5rem; border: 1px solid var(--border); border-radius: 0.75rem;
+  background: var(--surface); cursor: pointer; transition: all 0.25s;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+.type-card:hover { border-color: rgba(196,98,45,0.4); }
+.type-card.selected { border-color: var(--accent); background: rgba(196,98,45,0.08); }
+.type-icon { font-size: 1.4rem; }
+.type-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em; }
+.type-card.selected .type-label { color: var(--accent); }
+
+/* VIBE GRID */
+.vibe-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.75rem; width: 100%; margin-bottom: 2rem; }
+.vibe-card {
+  padding: 1.4rem 1rem; border: 1px solid var(--border); border-radius: 0.85rem;
+  cursor: pointer; transition: all 0.3s; text-align: left; position: relative;
+}
+.vibe-card.selected { border-color: var(--accent); background: rgba(196,98,45,0.05); }
+.vibe-swatch { width: 100%; height: 3.5rem; border-radius: 0.5rem; margin-bottom: 0.9rem; }
+.vibe-name { font-size: 0.88rem; font-weight: 500; color: var(--text); margin-bottom: 0.2rem; }
+.vibe-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
+.vibe-check {
+  position: absolute; top: 0.7rem; right: 0.7rem;
+  width: 1.2rem; height: 1.2rem; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15); display: flex;
+  align-items: center; justify-content: center; font-size: 0.55rem; transition: all 0.3s;
+}
+.vibe-card.selected .vibe-check { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* PLATFORMS */
+.platform-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-bottom: 2rem; width: 100%; }
+.platform-pill {
+  padding: 0.55rem 1.2rem; border: 1px solid var(--border); border-radius: 2rem;
+  font-size: 0.82rem; color: var(--muted); cursor: pointer; transition: all 0.25s;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--surface); font-family: 'DM Sans', sans-serif;
+}
+.platform-pill.selected { border-color: var(--accent); color: var(--accent); background: rgba(196,98,45,0.07); }
+
+/* FIRE SCREEN */
+.fire-screen { padding-bottom: 1rem; }
+.fire-wrap { width: 160px; margin: 0 auto 2rem; opacity: 0; transition: opacity 0.8s ease; }
+.fire-wrap.lit { opacity: 1; }
+.fire-community-name {
+  font-family: var(--heading-font); font-size: clamp(1.6rem,4vw,2.2rem);
+  font-weight: 300; font-style: italic; margin-bottom: 0.3rem;
+  opacity: 0; transform: translateY(10px); transition: all 0.8s ease 1.2s;
+}
+.fire-community-name.show { opacity: 1; transform: translateY(0); }
+.fire-community-name em { color: var(--accent); font-style: normal; }
+.fire-tagline {
+  font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--faint); margin-bottom: 2.5rem;
+  opacity: 0; transition: opacity 0.8s ease 1.8s;
+}
+.fire-tagline.show { opacity: 1; }
+.fire-enter-btn { opacity: 0; transform: translateY(8px); transition: all 0.6s ease 2.4s; }
+.fire-enter-btn.show { opacity: 1; transform: translateY(0); }
+.skip-row {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  font-size: 0.72rem; color: var(--faint); cursor: pointer;
+  letter-spacing: 0.08em; transition: color 0.3s; z-index: 20;
+}
+.skip-row:hover { color: var(--muted); }
+
+/* Stars canvas */
+#stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="progress-bar" id="progress"></div>
+<button class="back-btn" id="back-btn" onclick="prevScreen()">← back</button>
+
+<!-- SCREEN 1 -->
+<div class="screen active" id="screen-1">
+  <div class="hearth-logo">Commune <span>Hearth</span></div>
+  <div class="arrival-symbol">
+    <div class="arrival-ring"></div><div class="arrival-ring"></div>
+    <div class="arrival-ring"></div><div class="arrival-core"></div>
+  </div>
+  <h1 class="arrival-headline">Something different<br>lives here.</h1>
+  <p class="arrival-sub">A workspace that feels like yours. Built for the community managers who actually care.</p>
+  <button class="btn" onclick="nextScreen()">Find my fire →</button>
+</div>
+
+<!-- SCREEN 2 — NAME -->
+<div class="screen enter-up" id="screen-2">
+  <div class="hearth-logo">Commune <span>Hearth</span></div>
+  <div class="step-dots" id="dots-2"></div>
+  <p class="screen-q">Hello, wanderer.<br>What should we <em>call you?</em></p>
+  <p class="screen-hint">Just your first name is perfect.</p>
+  <input type="text" class="text-input" id="input-name" placeholder="Your name..." maxlength="40" oninput="onNameInput()">
+  <button class="btn" id="btn-name" onclick="nextScreen()" disabled>Continue →</button>
+</div>
+
+<!-- SCREEN 3 — COMMUNITY -->
+<div class="screen enter-up" id="screen-3">
+  <div class="hearth-logo">Commune <span>Hearth</span></div>
+  <div class="step-dots" id="dots-3"></div>
+  <p class="screen-q">What's your<br><em>community called?</em></p>
+  <p class="screen-hint">This becomes your workspace name.</p>
+  <input type="text" class="text-input" id="input-community" placeholder="Community name..." maxlength="50" oninput="onCommunityInput()">
+  <p style="font-size:0.75rem;color:var(--faint);margin-bottom:1rem;letter-spacing:0.05em;text-transform:uppercase">What kind of community?</p>
+  <div class="type-grid">
+    <div class="type-card" onclick="selectType(this,'Gaming')"><span class="type-icon">🎮</span><span class="type-label">Gaming</span></div>
+    <div class="type-card" onclick="selectType(this,'Creative')"><span class="type-icon">🎨</span><span class="type-label">Creative</span></div>
+    <div class="type-card" onclick="selectType(this,'Brand')"><span class="type-icon">✦</span><span class="type-label">Brand</span></div>
+    <div class="type-card" onclick="selectType(this,'Lifestyle')"><span class="type-icon">🌿</span><span class="type-label">Lifestyle</span></div>
+    <div class="type-card" onclick="selectType(this,'Fandom')"><span class="type-icon">💫</span><span class="type-label">Fandom</span></div>
+    <div class="type-card" onclick="selectType(this,'Other')"><span class="type-icon">∞</span><span class="type-label">Other</span></div>
+  </div>
+  <button class="btn" id="btn-community" onclick="nextScreen()" disabled>Continue →</button>
+</div>
+
+<!-- SCREEN 4 — VIBE -->
+<div class="screen enter-up" id="screen-4">
+  <div class="hearth-logo">Commune <span>Hearth</span></div>
+  <div class="step-dots" id="dots-4"></div>
+  <p class="screen-q">How does your<br>community <em>feel?</em></p>
+  <p class="screen-hint">Pick the vibe that's closest — you can fine-tune everything later.</p>
+  <div class="vibe-grid">
+    <div class="vibe-card" onclick="selectVibe(this,'ember')">
+      <div class="vibe-check">✓</div>
+      <div class="vibe-swatch" style="background:linear-gradient(135deg,#100d0a,#2d1f0e,#c4622d)"></div>
+      <div class="vibe-name">Ember</div>
+      <div class="vibe-desc">Deep, warm, mysterious. For serious communities with soul.</div>
+    </div>
+    <div class="vibe-card" onclick="selectVibe(this,'bloom')">
+      <div class="vibe-check">✓</div>
+      <div class="vibe-swatch" style="background:linear-gradient(135deg,#fdf6f0,#ffb8b8,#e8405a)"></div>
+      <div class="vibe-name">Bloom</div>
+      <div class="vibe-desc">Bright, warm, energetic. For communities full of life.</div>
+    </div>
+    <div class="vibe-card" onclick="selectVibe(this,'neon')">
+      <div class="vibe-check">✓</div>
+      <div class="vibe-swatch" style="background:linear-gradient(135deg,#0d0d14,#0d2030,#00e5ff)"></div>
+      <div class="vibe-name">Neon</div>
+      <div class="vibe-desc">Electric, sharp, bold. For gaming and tech communities.</div>
+    </div>
+    <div class="vibe-card" onclick="selectVibe(this,'meadow')">
+      <div class="vibe-check">✓</div>
+      <div class="vibe-swatch" style="background:linear-gradient(135deg,#f4f7f2,#c8e6c9,#3a7d44)"></div>
+      <div class="vibe-name">Meadow</div>
+      <div class="vibe-desc">Calm, grounded, natural. For cozy and lifestyle communities.</div>
+    </div>
+  </div>
+  <button class="btn" id="btn-vibe" onclick="nextScreen()" disabled>Continue →</button>
+</div>
+
+<!-- SCREEN 5 — PLATFORMS -->
+<div class="screen enter-up" id="screen-5">
+  <div class="hearth-logo">Commune <span>Hearth</span></div>
+  <div class="step-dots" id="dots-5"></div>
+  <p class="screen-q">Where does your<br>community <em>live?</em></p>
+  <p class="screen-hint">Select all that apply — you can always add more later.</p>
+  <div class="platform-grid">
+    <div class="platform-pill" onclick="togglePlatform(this,'discord')">💬 Discord</div>
+    <div class="platform-pill" onclick="togglePlatform(this,'twitter')">🐦 Twitter / X</div>
+    <div class="platform-pill" onclick="togglePlatform(this,'reddit')">🟠 Reddit</div>
+    <div class="platform-pill" onclick="togglePlatform(this,'instagram')">📷 Instagram</div>
+    <div class="platform-pill" onclick="togglePlatform(this,'bluesky')">🦋 Bluesky</div>
+    <div class="platform-pill" onclick="togglePlatform(this,'youtube')">▶️ YouTube</div>
+    <div class="platform-pill" onclick="togglePlatform(this,'tiktok')">🎵 TikTok</div>
+    <div class="platform-pill" onclick="togglePlatform(this,'twitch')">🎮 Twitch</div>
+  </div>
+  <button class="btn" id="btn-platforms" onclick="lightHearth()" disabled>Light the hearth 🔥</button>
+</div>
+
+<!-- SCREEN 6 — FIRE -->
+<div class="screen fire-screen enter-up" id="screen-6">
+  <div class="fire-wrap" id="fire-wrap"></div>
+  <p class="fire-community-name" id="fire-name"><em id="fire-community-display"></em> Hearth</p>
+  <p class="fire-tagline" id="fire-tagline">is lit ✦ welcome home</p>
+  <div class="fire-enter-btn" id="fire-enter">
+    <button class="btn" onclick="enterHearth()">Enter your hearth →</button>
+  </div>
+</div>
+
+<div class="skip-row" id="skip-row" onclick="enterHearth()">skip for now</div>
+
+<script src="shared/storage.js"></script>
+<script src="shared/theme.js"></script>
+<script src="shared/nav.js"></script>
+<script src="shared/fire.js"></script>
+<script>
+  initTheme();
+
+  // Stars
+  (function() {
+    const c = document.getElementById('stars');
+    const ctx = c.getContext('2d');
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const stars = Array.from({length:120}, () => ({
+      x:Math.random()*c.width, y:Math.random()*c.height,
+      r:Math.random()*1.2+0.2, a:Math.random(), s:Math.random()*0.003+0.001
+    }));
+    function draw() {
+      ctx.clearRect(0,0,c.width,c.height);
+      stars.forEach(s => {
+        s.a+=s.s; if(s.a>1)s.s*=-1; if(s.a<0)s.s*=-1;
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(240,232,220,${s.a*0.5})`; ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+    window.addEventListener('resize',()=>{c.width=window.innerWidth;c.height=window.innerHeight;});
+  })();
+
+  // State
+  let currentScreen = 1;
+  const TOTAL_STEPS = 4;
+  let selectedVibe = null;
+  let selectedPlatforms = [];
+  let communityType = '';
+
+  function renderDots(id) {
+    const el = document.getElementById('dots-' + id);
+    if (!el) return;
+    el.innerHTML = '';
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === id-1 ? ' active' : i < id-1 ? ' done' : '');
+      el.appendChild(d);
+    }
+  }
+
+  function showScreen(n) {
+    const prev = document.getElementById('screen-' + currentScreen);
+    const next = document.getElementById('screen-' + n);
+    prev.classList.add('exit-up'); prev.classList.remove('active');
+    next.classList.remove('enter-up'); next.classList.add('active');
+    setTimeout(() => { prev.classList.remove('exit-up'); prev.classList.add('enter-up'); }, 450);
+    currentScreen = n;
+    document.getElementById('progress').style.width = ((n-1)/5*100) + '%';
+    renderDots(n);
+    const backBtn = document.getElementById('back-btn');
+    backBtn.classList.toggle('visible', n > 1 && n < 6);
+    document.getElementById('skip-row').style.display = n >= 6 ? 'none' : 'block';
+  }
+
+  function nextScreen() { if (currentScreen < 6) showScreen(currentScreen + 1); }
+  function prevScreen() { if (currentScreen > 1) showScreen(currentScreen - 1); }
+
+  function onNameInput() {
+    const val = document.getElementById('input-name').value.trim();
+    document.getElementById('btn-name').disabled = val.length < 1;
+  }
+
+  function onCommunityInput() {
+    const val = document.getElementById('input-community').value.trim();
+    document.getElementById('btn-community').disabled = val.length < 1 || !communityType;
+  }
+
+  function selectType(el, type) {
+    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    communityType = type;
+    onCommunityInput();
+  }
+
+  function selectVibe(el, name) {
+    document.querySelectorAll('.vibe-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedVibe = name;
+    applyPreset(name);
+    document.getElementById('btn-vibe').disabled = false;
+  }
+
+  function togglePlatform(el, platform) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) {
+      if (!selectedPlatforms.includes(platform)) selectedPlatforms.push(platform);
+    } else {
+      selectedPlatforms = selectedPlatforms.filter(p => p !== platform);
+    }
+    document.getElementById('btn-platforms').disabled = selectedPlatforms.length === 0;
+  }
+
+  function lightHearth() {
+    const name  = document.getElementById('input-name').value.trim();
+    const community = document.getElementById('input-community').value.trim();
+    HS.setUser({ name, community, type: communityType, platforms: selectedPlatforms });
+    if (selectedVibe) HS.setTheme(selectedVibe, {});
+    document.getElementById('fire-community-display').textContent = community || 'Your';
+    showScreen(6);
+    mountFire('fire-wrap');
+    setTimeout(() => {
+      document.getElementById('fire-wrap').classList.add('lit');
+      setTimeout(() => {
+        document.getElementById('fire-name').classList.add('show');
+        document.getElementById('fire-tagline').classList.add('show');
+        setTimeout(() => document.getElementById('fire-enter').classList.add('show'), 600);
+      }, 800);
+    }, 300);
+  }
+
+  function enterHearth() {
+    HS.setOnboarded();
+    navigateTo('dashboard.html');
+  }
+
+  renderDots(2);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const map = {2:'btn-name', 3:'btn-community'};
+    if (map[currentScreen]) {
+      const b = document.getElementById(map[currentScreen]);
+      if (b && !b.disabled) b.click();
+    }
+  });
+</script>
+</body>
+</html>
