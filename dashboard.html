@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commune Hearth — Your Hearth</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+html, body { height: 100%; overflow: hidden; }
+.app-shell { display: flex; height: 100vh; }
+.app-main  { flex: 1; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; padding: 1.8rem 2rem; gap: 1.4rem; position: relative; }
+
+.ambient-glow {
+  position: fixed; bottom: -20%; left: calc(var(--nav-w) + 15%);
+  width: 600px; height: 400px; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse, var(--hero-glow) 0%, transparent 70%);
+  animation: ambBreath 8s ease-in-out infinite;
+}
+@keyframes ambBreath { 0%,100%{opacity:.7} 50%{opacity:1} }
+
+/* TOPBAR */
+.topbar { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; flex-shrink: 0; }
+.greeting-eyebrow { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+.season-badge { background: rgba(196,98,45,0.12); border: 1px solid rgba(196,98,45,0.2); border-radius: 2rem; padding: 0.15rem 0.6rem; font-size: 0.6rem; letter-spacing: 0.12em; color: var(--accent); }
+.greeting-headline { font-family: var(--heading-font); font-size: clamp(1.4rem,2.5vw,2rem); font-weight: 300; line-height: 1.2; }
+.greeting-headline em { font-style: italic; color: var(--accent2); }
+.topbar-right { display: flex; align-items: center; gap: 0.8rem; }
+.topbar-time { font-size: 0.78rem; color: var(--faint); letter-spacing: 0.06em; text-align: right; }
+.topbar-time strong { display: block; font-size: 1.1rem; font-weight: 400; color: var(--muted); }
+.compose-btn {
+  background: var(--accent); color: var(--btn-text); border: none;
+  padding: 0.6rem 1.2rem; border-radius: 2rem; font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 500; letter-spacing: 0.04em; cursor: pointer;
+  display: flex; align-items: center; gap: 0.4rem; transition: all 0.3s;
+}
+.compose-btn:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(var(--fire-glow-rgb),0.35); }
+
+/* GRID */
+.content-grid {
+  flex: 1; display: grid; min-height: 0;
+  grid-template-columns: 280px 1fr 260px;
+  grid-template-rows: auto 1fr;
+  gap: 1.2rem; position: relative; z-index: 1;
+}
+
+/* HEARTH CARD */
+.hearth-card {
+  grid-column: 2; grid-row: 1 / 3;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 1.2rem; position: relative; overflow: hidden;
+}
+.hearth-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 80%, var(--hero-glow) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hearth-title { font-family: var(--heading-font); font-size: 1.1rem; font-weight: 300; font-style: italic; color: var(--muted); letter-spacing: 0.04em; }
+.community-name { font-family: var(--heading-font); font-size: clamp(1.6rem,2.5vw,2.2rem); font-weight: 600; letter-spacing: 0.06em; }
+.fire-container { width: 120px; position: relative; z-index: 1; }
+
+/* WARMTH */
+.warmth-row { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%; }
+.warmth-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); }
+.warmth-bar-wrap { width: 180px; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.warmth-bar { height: 100%; width: 72%; border-radius: 3px; background: linear-gradient(to right, var(--accent), var(--accent2)); box-shadow: 0 0 8px rgba(var(--fire-glow-rgb),0.5); animation: warmthPulse 3s ease-in-out infinite; }
+@keyframes warmthPulse { 0%,100%{box-shadow:0 0 8px rgba(var(--fire-glow-rgb),0.4)} 50%{box-shadow:0 0 14px rgba(var(--fire-glow-rgb),0.7)} }
+.warmth-reading { font-family: var(--heading-font); font-size: 0.85rem; font-style: italic; color: var(--accent2); }
+
+/* STATS */
+.quick-stats { display: flex; gap: 1.2rem; justify-content: center; }
+.quick-stat { text-align: center; }
+.quick-stat-num { font-family: var(--heading-font); font-size: 1.5rem; font-weight: 300; line-height: 1; }
+.quick-stat-label { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-top: 0.2rem; }
+.quick-stat-delta { font-size: 0.68rem; color: #7ac47a; margin-top: 0.1rem; }
+
+/* LEFT CARDS */
+.todays-card    { grid-column: 1; grid-row: 1; }
+.platforms-card { grid-column: 1; grid-row: 2; }
+
+/* RIGHT CARDS */
+.moments-card { grid-column: 3; grid-row: 1; }
+.drafts-card  { grid-column: 3; grid-row: 2; }
+
+/* POST ITEMS */
+.post-items { display: flex; flex-direction: column; gap: 0.6rem; }
+.post-item {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.7rem 0.9rem; border: 1px solid var(--border);
+  border-radius: 0.65rem; background: rgba(255,255,255,0.02);
+  cursor: pointer; transition: all 0.25s;
+  animation: slideIn 0.5s ease forwards; opacity: 0;
+}
+.post-item:hover { border-color: var(--accent); background: rgba(196,98,45,0.05); transform: translateX(3px); }
+.post-item:nth-child(1){animation-delay:0.1s} .post-item:nth-child(2){animation-delay:0.2s}
+.post-item:nth-child(3){animation-delay:0.3s} .post-item:nth-child(4){animation-delay:0.4s}
+@keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+.post-info { flex: 1; min-width: 0; }
+.post-title { font-size: 0.8rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post-time  { font-size: 0.68rem; color: var(--faint); margin-top: 0.1rem; }
+.post-status { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.post-status.scheduled { background: var(--accent2); animation: dotBlink 2s ease-in-out infinite; }
+.post-status.draft     { background: var(--faint); }
+.post-status.review    { background: #e8c44a; animation: dotBlink 2s ease-in-out infinite; }
+@keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* PLATFORM ROWS */
+.platform-rows { display: flex; flex-direction: column; gap: 0.55rem; }
+.platform-row {
+  display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem; background: rgba(255,255,255,0.02); transition: background 0.2s;
+}
+.platform-row:hover { background: var(--surface2); }
+.p-name { font-size: 0.78rem; color: var(--muted); flex: 1; }
+.p-indicator { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; animation: dotBlink 2.5s ease-in-out infinite; }
+.p-indicator.ok   { background: #7ac47a; }
+.p-indicator.warn { background: #e8c44a; animation: dotBlink 1s ease-in-out infinite; }
+.p-indicator.off  { background: var(--faint); animation: none; }
+.p-status-text { font-size: 0.65rem; color: var(--faint); }
+
+/* MOMENTS */
+.moment-items { display: flex; flex-direction: column; gap: 0.7rem; }
+.moment-item {
+  padding: 0.8rem; border: 1px solid var(--border); border-radius: 0.65rem;
+  background: rgba(255,255,255,0.02); transition: border-color 0.3s; cursor: pointer;
+  animation: fadeUp 0.5s ease forwards; opacity: 0;
+}
+.moment-item:nth-child(1){animation-delay:0.2s} .moment-item:nth-child(2){animation-delay:0.35s}
+.moment-item:nth-child(3){animation-delay:0.5s}
+.moment-item:hover { border-color: rgba(196,98,45,0.3); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.moment-text { font-size: 0.8rem; color: var(--muted); line-height: 1.5; font-style: italic; }
+.moment-meta { font-size: 0.65rem; color: var(--faint); margin-top: 0.4rem; letter-spacing: 0.04em; }
+
+/* DRAFTS */
+.draft-items { display: flex; flex-direction: column; gap: 0.55rem; }
+.draft-item {
+  display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border); border-radius: 0.6rem;
+  cursor: pointer; transition: all 0.25s; background: rgba(255,255,255,0.02);
+}
+.draft-item:hover { border-color: var(--accent); background: rgba(196,98,45,0.04); }
+.draft-info { flex: 1; min-width: 0; }
+.draft-title { font-size: 0.78rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.draft-platforms { font-size: 0.64rem; color: var(--faint); margin-top: 0.1rem; }
+.draft-badge {
+  font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.15rem 0.45rem; border-radius: 2rem; white-space: nowrap;
+  background: rgba(232,196,74,0.12); color: #e8c44a; border: 1px solid rgba(232,196,74,0.2);
+}
+
+/* STATUS BAR */
+.status-bar {
+  display: flex; align-items: center; gap: 1.5rem;
+  padding: 0.6rem 0; border-top: 1px solid var(--border);
+  flex-shrink: 0; position: relative; z-index: 1; flex-wrap: wrap;
+}
+.status-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--faint); }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: #7ac47a; animation: dotBlink 3s ease-in-out infinite; }
+.status-bar-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; color: var(--faint); }
+.chapter-badge {
+  background: rgba(196,98,45,0.1); border: 1px solid rgba(196,98,45,0.2);
+  border-radius: 2rem; padding: 0.2rem 0.7rem; font-size: 0.62rem;
+  letter-spacing: 0.1em; color: var(--accent); animation: chapterGlow 4s ease-in-out infinite;
+}
+@keyframes chapterGlow { 0%,100%{opacity:0.7} 50%{opacity:1} }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .content-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; }
+  .hearth-card    { grid-column: 1/3; grid-row: 1; flex-direction: row; justify-content: space-around; }
+  .todays-card    { grid-column: 1; grid-row: 2; }
+  .platforms-card { grid-column: 2; grid-row: 2; }
+  .moments-card   { grid-column: 1; grid-row: 3; }
+  .drafts-card    { grid-column: 2; grid-row: 3; }
+  html, body { overflow: auto; height: auto; }
+  .app-main { overflow-y: auto; height: auto; min-height: calc(100vh - 52px); }
+}
+@media (max-width: 599px) {
+  .content-grid { grid-template-columns: 1fr; }
+  .hearth-card    { grid-column:1; grid-row:1; flex-direction: column; }
+  .todays-card    { grid-column:1; grid-row:2; }
+  .moments-card   { grid-column:1; grid-row:3; }
+  .platforms-card { grid-column:1; grid-row:4; }
+  .drafts-card    { grid-column:1; grid-row:5; }
+  .topbar { flex-wrap: wrap; gap: 0.8rem; }
+  .topbar-right { width: 100%; justify-content: space-between; }
+  .topbar-time { display: none; }
+  .status-bar-right { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="sidebar-mount"></div>
+  <div id="theme-panel-mount"></div>
+
+  <main class="app-main">
+    <div class="ambient-glow"></div>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="greeting-eyebrow">
+          <span id="date-display"></span>
+          <span class="season-badge">✦ The First Frost</span>
+        </div>
+        <h1 class="greeting-headline" id="greeting-headline">Good morning.</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time">
+          <strong id="clock-display">--:--</strong>
+          <span id="ampm-display">AM</span>
+        </div>
+        <button class="compose-btn" onclick="navigateTo('workspace.html')">✦ New spark</button>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="content-grid">
+
+      <!-- TODAY'S FIRE -->
+      <div class="card todays-card">
+        <div class="card-label">Today's fire <span class="card-label-action">View all →</span></div>
+        <div class="post-items" id="posts-list">
+          <div class="post-item"><span>💬</span><div class="post-info"><div class="post-title">Tournament hype announcement</div><div class="post-time">Discord · 10:00 AM</div></div><div class="post-status scheduled"></div></div>
+          <div class="post-item"><span>🟠</span><div class="post-info"><div class="post-title">Saturday tournament — join us</div><div class="post-time">Reddit · 2:00 PM</div></div><div class="post-status scheduled"></div></div>
+          <div class="post-item"><span>📷</span><div class="post-info"><div class="post-title">Tournament promo graphic</div><div class="post-time">Instagram · 6:00 PM</div></div><div class="post-status review"></div></div>
+          <div class="post-item"><span>🦋</span><div class="post-info"><div class="post-title">Quick hype post</div><div class="post-time">Bluesky · 6:15 PM</div></div><div class="post-status draft"></div></div>
+        </div>
+      </div>
+
+      <!-- HEARTH -->
+      <div class="card hearth-card">
+        <div class="hearth-title">tending</div>
+        <div class="community-name" id="community-name">Your Community</div>
+        <div class="fire-container" id="fire-container"></div>
+        <div class="warmth-row">
+          <div class="warmth-label">Community warmth</div>
+          <div class="warmth-bar-wrap"><div class="warmth-bar"></div></div>
+          <div class="warmth-reading">warm and growing</div>
+        </div>
+        <div class="quick-stats">
+          <div class="quick-stat"><div class="quick-stat-num">2.4k</div><div class="quick-stat-label">Members</div><div class="quick-stat-delta">+23 today</div></div>
+          <div class="quick-stat"><div class="quick-stat-num">4</div><div class="quick-stat-label">Posts today</div><div class="quick-stat-delta">3 scheduled</div></div>
+          <div class="quick-stat"><div class="quick-stat-num">12</div><div class="quick-stat-label">Day streak</div><div class="quick-stat-delta">🔥 kept warm</div></div>
+        </div>
+      </div>
+
+      <!-- MOMENTS -->
+      <div class="card moments-card">
+        <div class="card-label">From the community <span class="card-label-action">All →</span></div>
+        <div class="moment-items">
+          <div class="moment-item"><div class="moment-text">"Just found this community and I already feel at home. Tournament Saturday?? I'm in."</div><div class="moment-meta">Discord · #introductions · 8 min ago</div></div>
+          <div class="moment-item"><div class="moment-text">New member introduction from @frostbite_plays — their third post this week.</div><div class="moment-meta">Discord · 42 min ago</div></div>
+          <div class="moment-item"><div class="moment-text">Reddit post gaining traction — 47 upvotes in the first hour.</div><div class="moment-meta">Reddit · 1 hr ago</div></div>
+        </div>
+      </div>
+
+      <!-- PLATFORMS -->
+      <div class="card platforms-card">
+        <div class="card-label">Platform health</div>
+        <div class="platform-rows" id="platform-rows">
+          <div class="platform-row"><span>💬</span><span class="p-name">Discord</span><span class="p-status-text">Connected</span><span class="p-indicator ok"></span></div>
+          <div class="platform-row"><span>🟠</span><span class="p-name">Reddit</span><span class="p-status-text">Connected</span><span class="p-indicator ok"></span></div>
+          <div class="platform-row"><span>🦋</span><span class="p-name">Bluesky</span><span class="p-status-text">Connected</span><span class="p-indicator ok"></span></div>
+          <div class="platform-row"><span>📷</span><span class="p-name">Instagram</span><span class="p-status-text">Needs attention</span><span class="p-indicator warn"></span></div>
+          <div class="platform-row"><span>🐦</span><span class="p-name">Twitter / X</span><span class="p-status-text">Not connected</span><span class="p-indicator off"></span></div>
+        </div>
+      </div>
+
+      <!-- DRAFTS -->
+      <div class="card drafts-card">
+        <div class="card-label">Waiting for you <span class="card-label-action" onclick="navigateTo('workspace.html')">All drafts →</span></div>
+        <div class="draft-items">
+          <div class="draft-item" onclick="navigateTo('workspace.html')"><span>✍️</span><div class="draft-info"><div class="draft-title">Weekend tournament recap</div><div class="draft-platforms">Discord · Reddit · Bluesky</div></div><span class="draft-badge">Review</span></div>
+          <div class="draft-item" onclick="navigateTo('workspace.html')"><span>✦</span><div class="draft-info"><div class="draft-title">New member welcome post</div><div class="draft-platforms">Discord</div></div><span class="draft-badge">Draft</span></div>
+          <div class="draft-item" onclick="navigateTo('workspace.html')"><span>🗓</span><div class="draft-info"><div class="draft-title">November event schedule</div><div class="draft-platforms">All platforms</div></div><span class="draft-badge">Draft</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <div class="status-item"><span class="status-dot"></span>All systems tending</div>
+      <div class="status-item">Last spark: 2 hours ago</div>
+      <div class="status-item">4 posts this week</div>
+      <div class="status-bar-right">Now playing &nbsp;<span class="chapter-badge">✦ Chapter One — The First Frost</span></div>
+    </div>
+  </main>
+</div>
+
+<script src="shared/storage.js"></script>
+<script src="shared/theme.js"></script>
+<script src="shared/nav.js"></script>
+<script src="shared/fire.js"></script>
+<script>
+  // Guard — redirect to onboarding if not set up
+  if (!HS.isOnboarded()) { window.location.href = 'onboarding.html'; }
+
+  initTheme();
+  mountSidebar('dashboard');
+  mountThemePanel();
+  setTimeout(syncThemePanelUI, 50);
+
+  // Load user data
+  const user = HS.getUser();
+  if (user.community) {
+    document.getElementById('community-name').textContent = user.community;
+    document.title = user.community + ' Hearth — Commune Hearth';
+  }
+  document.getElementById('greeting-headline').innerHTML = buildGreeting(user.name);
+  startClock('clock-display', 'ampm-display');
+  formatDate(document.getElementById('date-display'));
+
+  // Mount fire
+  mountFire('fire-container');
+</script>
+</body>
+</html>
