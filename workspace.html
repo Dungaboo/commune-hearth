@@ -327,6 +327,9 @@ html, body { height: 100%; overflow: hidden; }
   const DEFAULT_PLATFORMS = ['discord', 'reddit', 'bluesky'];
   let activePlatforms = [...DEFAULT_PLATFORMS];
   let saveTimer = null;
+  let statRotateTimer = null;
+  let statSwapTimer = null;
+  let statIndex = 0;
 
   // Load saved state
   (function loadSaved() {
@@ -487,10 +490,6 @@ html, body { height: 100%; overflow: hidden; }
       'Twitter · your lowest engagement platform lately',
     ],
   };
-
-  let statRotateTimer = null;
-  let statSwapTimer = null;
-  let statIndex = 0;
 
   function getLivePlatformText(platform) {
     const platformName = PLATFORMS[platform]?.name || 'Platform';
