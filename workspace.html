@@ -410,6 +410,7 @@ html, body { height: 100%; overflow: hidden; }
   // ── TEXT ──
   function onTextInput() {
     contents[activeTab] = document.getElementById('post-textarea').value;
+    updateStatBar(activeTab);
     updateCharCount(); updateScheduleBtn(); markTabContent();
     triggerSave();
   }
@@ -488,10 +489,21 @@ html, body { height: 100%; overflow: hidden; }
   };
 
   let statRotateTimer = null;
+  let statSwapTimer = null;
   let statIndex = 0;
+
+  function getLivePlatformText(platform) {
+    const platformName = PLATFORMS[platform]?.name || 'Platform';
+    const draftText = (contents[platform] ?? HS.getDrafts()[platform] ?? '').trim();
+    if (draftText) return `${platformName} · 1 draft in progress`;
+    const raw = PLATFORM_STATS[platform]?.[statIndex] || 'last posted recently';
+    const suffix = raw.includes('·') ? raw.split('·').slice(1).join('·').trim() : raw;
+    return `${platformName} · ${suffix}`;
+  }
 
   function startStatRotation(platform) {
     clearInterval(statRotateTimer);
+    clearTimeout(statSwapTimer);
     statIndex = Math.floor(Math.random() * PLATFORM_STATS[platform].length);
     updateStatBar(platform);
     statRotateTimer = setInterval(() => {
@@ -502,7 +514,7 @@ html, body { height: 100%; overflow: hidden; }
 
   function updateStatBar(platform) {
     const el = document.getElementById('platform-stat-text');
-    if (el) el.textContent = PLATFORM_STATS[platform]?.[statIndex] || '';
+    if (el) el.textContent = getLivePlatformText(platform);
   }
 
   function rotateStat(platform) {
@@ -512,8 +524,9 @@ html, body { height: 100%; overflow: hidden; }
     // Fade out, swap, fade in
     el.style.transition = 'opacity 0.3s';
     el.style.opacity = '0';
-    setTimeout(() => {
-      el.textContent = PLATFORM_STATS[platform]?.[statIndex] || '';
+    clearTimeout(statSwapTimer);
+    statSwapTimer = setTimeout(() => {
+      el.textContent = getLivePlatformText(platform);
       el.style.opacity = '1';
     }, 320);
   }
