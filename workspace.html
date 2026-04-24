@@ -331,6 +331,45 @@ html, body { height: 100%; overflow: hidden; }
   let statSwapTimer = null;
   let statIndex = 0;
 
+  // ── ROTATING PLATFORM STATS ──────────────────────────────
+  const PLATFORM_STATS = {
+    discord:   [
+      'Discord · last posted 2 hours ago',
+      'Discord · your most active platform',
+      'Discord · 8 posts this week',
+      'Discord · community most active after 7pm',
+      'Discord · shortest posts perform best here',
+    ],
+    reddit:    [
+      'Reddit · last posted yesterday',
+      'Reddit · context-first posts get the most traction',
+      'Reddit · 3 posts this week',
+      'Reddit · longer form works well here',
+      'Reddit · your quietest platform this week',
+    ],
+    bluesky:   [
+      'Bluesky · last posted 3 days ago',
+      'Bluesky · your newest platform',
+      'Bluesky · wit lands well here',
+      'Bluesky · 2 posts this week',
+      'Bluesky · growing faster than expected',
+    ],
+    instagram: [
+      'Instagram · last posted 4 days ago',
+      'Instagram · hook in the first line — always',
+      'Instagram · visual posts outperform text here',
+      'Instagram · 1 post this week',
+      'Instagram · your highest reach platform',
+    ],
+    twitter:   [
+      'Twitter · last posted 5 days ago',
+      'Twitter · 280 characters — every word earns its place',
+      'Twitter · 2 posts this week',
+      'Twitter · first 5 words decide everything',
+      'Twitter · your lowest engagement platform lately',
+    ],
+  };
+
   // Load saved state
   (function loadSaved() {
     const s = HS.getSession();
@@ -451,45 +490,6 @@ html, body { height: 100%; overflow: hidden; }
   }
 
   function setTone(el) {} // retired — kept to avoid any lingering onclick errors
-
-  // ── ROTATING PLATFORM STATS ──────────────────────────────
-  const PLATFORM_STATS = {
-    discord:   [
-      'Discord · last posted 2 hours ago',
-      'Discord · your most active platform',
-      'Discord · 8 posts this week',
-      'Discord · community most active after 7pm',
-      'Discord · shortest posts perform best here',
-    ],
-    reddit:    [
-      'Reddit · last posted yesterday',
-      'Reddit · context-first posts get the most traction',
-      'Reddit · 3 posts this week',
-      'Reddit · longer form works well here',
-      'Reddit · your quietest platform this week',
-    ],
-    bluesky:   [
-      'Bluesky · last posted 3 days ago',
-      'Bluesky · your newest platform',
-      'Bluesky · wit lands well here',
-      'Bluesky · 2 posts this week',
-      'Bluesky · growing faster than expected',
-    ],
-    instagram: [
-      'Instagram · last posted 4 days ago',
-      'Instagram · hook in the first line — always',
-      'Instagram · visual posts outperform text here',
-      'Instagram · 1 post this week',
-      'Instagram · your highest reach platform',
-    ],
-    twitter:   [
-      'Twitter · last posted 5 days ago',
-      'Twitter · 280 characters — every word earns its place',
-      'Twitter · 2 posts this week',
-      'Twitter · first 5 words decide everything',
-      'Twitter · your lowest engagement platform lately',
-    ],
-  };
 
   function getLivePlatformText(platform) {
     const platformName = PLATFORMS[platform]?.name || 'Platform';
