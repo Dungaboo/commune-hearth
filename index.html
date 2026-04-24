@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commune Hearth — Tend Your Community</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+body { display: block; overflow-x: hidden; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 1.4rem 3rem; display: flex; align-items: center;
+  justify-content: space-between; backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border);
+  transition: border-color 0.35s;
+}
+.logo {
+  font-family: var(--heading-font); font-size: 1.35rem; font-weight: 600;
+  letter-spacing: 0.06em; color: var(--accent2); text-decoration: none;
+}
+.logo span { color: var(--muted); font-weight: 300; font-style: italic; }
+.nav-cta {
+  font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text); text-decoration: none; border: 1px solid var(--border);
+  padding: 0.48rem 1.1rem; border-radius: 2rem; cursor: pointer;
+  background: none; font-family: 'DM Sans', sans-serif; transition: all 0.3s;
+}
+.nav-cta:hover { background: var(--accent); border-color: var(--accent); color: var(--btn-text); }
+
+/* HERO */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; padding: 8rem 3rem 4rem;
+  position: relative; overflow: hidden;
+}
+.hero-glow {
+  position: absolute; bottom: -15%; left: 38%; transform: translateX(-50%);
+  width: 900px; height: 600px;
+  background: radial-gradient(ellipse, var(--hero-glow) 0%, transparent 65%);
+  pointer-events: none; animation: heroBreath 7s ease-in-out infinite;
+}
+@keyframes heroBreath {
+  0%,100%{opacity:0.75;transform:translateX(-50%) scale(1)}
+  50%{opacity:1;transform:translateX(-50%) scale(1.05)}
+}
+.eyebrow {
+  font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 2rem;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s;
+}
+.hero h1 {
+  font-family: var(--heading-font); font-weight: var(--heading-weight);
+  font-size: clamp(3rem, 7.5vw, 6.5rem); line-height: 1.05; max-width: 16ch;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s;
+}
+.hero h1 em { font-style: italic; color: var(--accent2); }
+.hero-sub {
+  margin-top: 2.5rem; font-size: 1.02rem; color: var(--muted);
+  max-width: 46ch; line-height: 1.75;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s;
+}
+.hero-actions {
+  margin-top: 3rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s;
+}
+.hero-actions .btn-ghost-link {
+  color: var(--muted); font-size: 0.84rem; text-decoration: none;
+  display: flex; align-items: center; gap: 0.4rem; transition: color 0.3s;
+  background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+}
+.hero-actions .btn-ghost-link:hover { color: var(--text); }
+.platforms { margin-top: 5rem; opacity: 0; animation: fadeUp 0.8s ease forwards 1s; }
+.platforms p {
+  font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--faint); margin-bottom: 0.9rem;
+}
+.platform-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.platform-badge {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 2rem; padding: 0.32rem 0.9rem;
+  font-size: 0.76rem; color: var(--muted); letter-spacing: 0.04em;
+}
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)}
+}
+
+/* DIVIDER */
+.divider { height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); margin: 0 3rem; }
+
+/* SECTIONS */
+section { padding: 7rem 3rem; }
+
+/* PROBLEM */
+.problem { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; max-width: 1200px; }
+.problem h2 {
+  font-family: var(--heading-font); font-weight: var(--heading-weight);
+  font-size: clamp(1.9rem,3.2vw,3rem); line-height: 1.2; margin-bottom: 2rem;
+}
+.problem h2 strong { font-weight: 700; color: var(--accent2); }
+.problem p { color: var(--muted); line-height: 1.8; font-size: 0.96rem; margin-bottom: 1.1rem; }
+.pain-list { list-style: none; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.pain-list li {
+  display: flex; gap: 0.9rem; align-items: flex-start; padding: 1.1rem 1.3rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
+  transition: all 0.3s;
+}
+.pain-list li:hover { border-color: var(--accent); transform: translateX(4px); }
+.pain-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.12rem; }
+.pain-list li div strong { display: block; font-size: 0.86rem; font-weight: 500; color: var(--text); margin-bottom: 0.25rem; }
+.pain-list li div span { font-size: 0.8rem; color: var(--faint); line-height: 1.6; }
+
+/* HOW */
+.how { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.how-header { text-align: center; margin-bottom: 4.5rem; }
+.how-header h2 {
+  font-family: var(--heading-font); font-weight: var(--heading-weight);
+  font-size: clamp(1.7rem,3.2vw,2.8rem); line-height: 1.2; max-width: 22ch; margin: 0 auto;
+}
+.how-header h2 em { font-style: italic; color: var(--accent2); }
+.steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.4rem; max-width: 1200px; margin: 0 auto; }
+.step {
+  padding: 2.3rem; border: 1px solid var(--border); border-radius: 1rem;
+  background: var(--surface); transition: all 0.35s;
+}
+.step:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 14px 36px rgba(0,0,0,0.12); }
+.step-num {
+  font-family: var(--heading-font); font-size: 3.2rem; font-weight: 300;
+  color: var(--border); line-height: 1; margin-bottom: 1.4rem; display: block;
+}
+.step h3 { font-size: 0.92rem; font-weight: 500; color: var(--text); margin-bottom: 0.7rem; }
+.step p { font-size: 0.83rem; color: var(--muted); line-height: 1.7; }
+.step-tag {
+  display: inline-block; margin-top: 1.3rem; font-size: 0.67rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent);
+  padding: 0.22rem 0.65rem; border-radius: 2rem; opacity: 0.7;
+}
+
+/* PHILOSOPHY */
+.philosophy { max-width: 840px; margin: 0 auto; text-align: center; }
+.philosophy blockquote {
+  font-family: var(--heading-font); font-weight: 300; font-style: italic;
+  font-size: clamp(1.5rem,2.8vw,2.5rem); line-height: 1.45;
+  color: var(--text); margin: 2rem 0 3rem; padding: 0 2rem; position: relative;
+}
+.philosophy blockquote::before {
+  content: '"'; position: absolute; top: -1.5rem; left: -0.5rem;
+  font-size: 7rem; color: var(--accent); opacity: 0.1;
+  font-family: var(--heading-font); line-height: 1;
+}
+.phil-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.1rem; margin-top: 3.5rem; text-align: left; }
+.phil-card { padding: 1.7rem; border: 1px solid var(--border); border-radius: 0.75rem; background: var(--surface); transition: border-color 0.3s; }
+.phil-card:hover { border-color: var(--accent); }
+.phil-card h4 { font-size: 0.78rem; font-weight: 500; color: var(--accent2); margin-bottom: 0.55rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.phil-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+
+/* NEVER */
+.never-wrap { padding-top: 0; }
+.never {
+  background: var(--never-bg); border-radius: 1.5rem; padding: 3.5rem;
+  max-width: 880px; margin: 0 auto; border: 1px solid var(--border);
+}
+.never h3 { font-family: var(--heading-font); font-size: 1.9rem; font-weight: var(--heading-weight); margin-bottom: 0.4rem; }
+.never > p { color: var(--muted); font-size: 0.86rem; margin-bottom: 2.2rem; }
+.never-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.9rem; }
+.never-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.84rem; color: var(--muted); }
+.x-icon {
+  width: 1.35rem; height: 1.35rem; border-radius: 50%;
+  background: rgba(196,98,45,0.08); border: 1px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: var(--accent); font-size: 0.58rem; font-weight: 700;
+}
+
+/* WAITLIST */
+.waitlist { text-align: center; padding: 8rem 3rem; position: relative; overflow: hidden; }
+.waitlist-glow {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 700px; height: 450px;
+  background: radial-gradient(ellipse, var(--hero-glow) 0%, transparent 65%);
+  pointer-events: none;
+}
+.waitlist h2 {
+  font-family: var(--heading-font); font-weight: var(--heading-weight);
+  font-size: clamp(2rem,4.5vw,3.6rem); line-height: 1.2; margin-bottom: 1rem;
+}
+.waitlist h2 em { font-style: italic; color: var(--accent2); }
+.waitlist > p { color: var(--muted); font-size: 0.98rem; max-width: 42ch; margin: 0 auto 3rem; line-height: 1.7; }
+.wl-form { display: flex; gap: 0.7rem; max-width: 460px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+.wl-form input {
+  flex: 1; min-width: 210px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 3rem; padding: 0.88rem 1.5rem; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; outline: none;
+  transition: border-color 0.3s;
+}
+.wl-form input::placeholder { color: var(--faint); }
+.wl-form input:focus { border-color: var(--accent); }
+.wl-form button {
+  background: var(--accent); color: var(--btn-text); border: none;
+  padding: 0.88rem 1.9rem; border-radius: 3rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500;
+  cursor: pointer; transition: all 0.3s; white-space: nowrap;
+}
+.wl-form button:hover { background: var(--accent2); transform: translateY(-2px); }
+.wl-note { margin-top: 1.4rem; font-size: 0.74rem; color: var(--faint); letter-spacing: 0.05em; }
+.wl-success {
+  display: none; color: var(--accent2); font-family: var(--heading-font);
+  font-size: 1.45rem; font-style: italic; margin-top: 1rem;
+  animation: fadeUp 0.6s ease forwards;
+}
+
+/* FOOTER */
+footer {
+  padding: 2.2rem 3rem; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-tagline { font-family: var(--heading-font); font-style: italic; color: var(--muted); font-size: 0.92rem; }
+footer p { font-size: 0.74rem; color: var(--faint); letter-spacing: 0.04em; }
+
+/* REVEAL */
+.reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  nav { padding: 1.2rem 1.5rem; }
+  section { padding: 5rem 1.5rem; }
+  .hero { padding: 7rem 1.5rem 3rem; }
+  .problem, .steps, .phil-grid, .never-grid { grid-template-columns: 1fr; }
+  .problem { gap: 3rem; }
+  .never { padding: 2.2rem 1.3rem; }
+  footer { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- THEME PANEL MOUNT -->
+<div id="theme-panel-mount"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="index.html">Commune <span>Hearth</span></a>
+  <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <p class="eyebrow">For community managers, by one</p>
+  <h1>Tend your <em>community.</em> Not your spreadsheets.</h1>
+  <p class="hero-sub">Commune Hearth handles the mechanics of multi-platform community management so you can focus on the thing that actually matters — your people.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="handleFindMyFire()">Find my fire →</button>
+    <button class="btn-ghost-link" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See how it works →</button>
+  </div>
+  <div class="platforms">
+    <p>Built for</p>
+    <div class="platform-list">
+      <span class="platform-badge">Discord</span>
+      <span class="platform-badge">Reddit</span>
+      <span class="platform-badge">Bluesky</span>
+      <span class="platform-badge">Instagram</span>
+      <span class="platform-badge">Twitter / X</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section>
+  <div class="problem">
+    <div class="reveal">
+      <p class="section-label">The Sunday Problem</p>
+      <h2>You know the drill. Every. Single. <strong>Week.</strong></h2>
+      <p>It's Sunday afternoon. Your community has a tournament on Saturday. You need to post about it on five different platforms — and every single one needs to sound completely different.</p>
+      <p>Discord wants energy. Reddit wants context. Bluesky wants wit. Instagram wants hashtags. Twitter wants brevity. And you're the one translating the same message five times, for five audiences, in five different tones.</p>
+      <p>That's before the DMs buried in spam, the coordination threads you can't find, and the stakeholder recap you still haven't written.</p>
+    </div>
+    <div class="reveal">
+      <ul class="pain-list">
+        <li><span class="pain-icon">🗓</span><div><strong>The Sunday Planning Session</strong><span>Rewriting the same announcement for every platform because no two platforms speak the same language.</span></div></li>
+        <li><span class="pain-icon">📬</span><div><strong>Coordination That Goes Nowhere</strong><span>DMs lost in spam. Discord threads buried under 400 messages. Conversations everywhere and nowhere.</span></div></li>
+        <li><span class="pain-icon">🔁</span><div><strong>Switching Contexts Constantly</strong><span>Six tabs open. Five apps running. One brain trying to hold it all together while still showing up for your community.</span></div></li>
+        <li><span class="pain-icon">📊</span><div><strong>Proving Your Worth in a Report</strong><span>Pulling data from every platform manually to prove your community thrives — because stakeholders only speak spreadsheet.</span></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="how-header reveal">
+    <p class="section-label" style="justify-content:center;margin-bottom:1.4rem">How it works</p>
+    <h2>Your voice. Every platform. <em>Zero soul sold.</em></h2>
+  </div>
+  <div class="steps">
+    <div class="step reveal">
+      <span class="step-num">01</span>
+      <h3>Feed It Your Voice</h3>
+      <p>Paste in past posts from each platform. Hearth learns how you write for Discord versus Reddit versus Bluesky — because they're all different and that's the whole point.</p>
+      <span class="step-tag">Voice Profiles</span>
+    </div>
+    <div class="step reveal">
+      <span class="step-num">02</span>
+      <h3>Drop In Your Core Message</h3>
+      <p>Tell Hearth what's happening. A tournament. A drop. An announcement. Just the essentials — it handles the platform translation in your voice, not a generic AI voice.</p>
+      <span class="step-tag">Smart Suggestions</span>
+    </div>
+    <div class="step reveal">
+      <span class="step-num">03</span>
+      <h3>You Review. You Approve. You Post.</h3>
+      <p>Hearth suggests. You decide. Nothing goes out without your eyes on it. Because your community trusts you — not an algorithm — and that trust is not negotiable.</p>
+      <span class="step-tag">Human First</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="philosophy reveal">
+    <p class="section-label" style="justify-content:center">Our belief</p>
+    <blockquote>Community managers pour their soul into spaces other people call home. We handle the mechanics so they never have to choose between consistency and authenticity.</blockquote>
+    <div class="phil-grid">
+      <div class="phil-card"><h4>The Human is Irreplaceable</h4><p>Every feature enhances human judgment — never bypasses it. You read the room. You know when not to post. No tool can replicate that.</p></div>
+      <div class="phil-card"><h4>Communities Deserve Authenticity</h4><p>Your community built trust with you — not an AI. Suggestions should sound like you on a good day, or they're not good enough.</p></div>
+      <div class="phil-card"><h4>Relief Without Compromise</h4><p>You shouldn't choose between showing up consistently and showing up fully. Hearth removes the mechanical drain without touching the magic.</p></div>
+      <div class="phil-card"><h4>Built From the Inside</h4><p>Made by an ex-CM who lived every one of these problems. Not a growth hacker who read about community management once.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="never-wrap">
+  <div class="never reveal">
+    <h3>What we'll never build</h3>
+    <p>Some things aren't features. They're principles.</p>
+    <div class="never-grid">
+      <div class="never-item"><span class="x-icon">✕</span>One-click auto-posting without review</div>
+      <div class="never-item"><span class="x-icon">✕</span>AI responses to your community members</div>
+      <div class="never-item"><span class="x-icon">✕</span>Generic bulk content generation</div>
+      <div class="never-item"><span class="x-icon">✕</span>Anything that removes the human from the loop</div>
+      <div class="never-item"><span class="x-icon">✕</span>Tools that make every community sound the same</div>
+      <div class="never-item"><span class="x-icon">✕</span>Features that replace judgment with automation</div>
+    </div>
+  </div>
+</section>
+
+<section class="waitlist" id="waitlist">
+  <div class="waitlist-glow"></div>
+  <p class="section-label" style="justify-content:center;margin-bottom:1.4rem">Early access</p>
+  <h2>Be the first to <em>tend your hearth.</em></h2>
+  <p>We're building this for the CMs who care deeply. Join the waitlist and help shape what Commune Hearth becomes.</p>
+  <div class="wl-form" id="wl-form">
+    <input type="email" id="wl-email" placeholder="your@email.com">
+    <button onclick="handleWaitlist()">Join Waitlist</button>
+  </div>
+  <div class="wl-success" id="wl-success">You're on the list. Welcome to the hearth. 🔥</div>
+  <p class="wl-note">No spam. No noise. Just updates when it matters.</p>
+</section>
+
+<footer>
+  <a class="logo" href="index.html">Commune <span>Hearth</span></a>
+  <p class="footer-tagline">Tend your community.</p>
+  <p>© 2026 Commune Hearth. Built by a CM, for CMs.</p>
+</footer>
+
+<script src="shared/storage.js"></script>
+<script src="shared/theme.js"></script>
+<script src="shared/nav.js"></script>
+<script>
+  // Theme
+  initTheme();
+  mountThemePanel();
+
+  // Redirect if already onboarded
+  function handleFindMyFire() {
+    if (HS.isOnboarded()) {
+      navigateTo('dashboard.html');
+    } else {
+      navigateTo('onboarding.html');
+    }
+  }
+
+  // Waitlist
+  function handleWaitlist() {
+    const val = document.getElementById('wl-email').value;
+    if (!val || !val.includes('@')) {
+      document.getElementById('wl-email').style.borderColor = 'var(--accent)';
+      return;
+    }
+    document.getElementById('wl-form').style.display = 'none';
+    document.getElementById('wl-success').style.display = 'block';
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('wl-email').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleWaitlist();
+    });
+  });
+
+  // Scroll reveal
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e,i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 90);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
