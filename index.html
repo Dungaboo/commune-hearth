@@ -5,393 +5,689 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Commune Hearth — Tend Your Community</title>
 <link rel="stylesheet" href="shared/base.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-body { display: block; overflow-x: hidden; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { display: block; overflow-x: hidden; background: #100d0a; color: #f0e8dc; font-family: 'DM Sans', sans-serif; font-weight: 300; }
 
-/* NAV */
+/* ── TEXTURE OVERLAY ── */
+body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.5; mix-blend-mode: overlay;
+}
+
+/* ── NAV ── */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   padding: 1.4rem 3rem; display: flex; align-items: center;
-  justify-content: space-between; backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border);
-  transition: border-color 0.35s;
+  justify-content: space-between;
 }
 .logo {
-  font-family: var(--heading-font); font-size: 1.35rem; font-weight: 600;
-  letter-spacing: 0.06em; color: var(--accent2); text-decoration: none;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600;
+  letter-spacing: 0.08em; color: #e8924a; text-decoration: none;
 }
-.logo span { color: var(--muted); font-weight: 300; font-style: italic; }
+.logo span { font-weight: 300; font-style: italic; color: #7a6552; }
 .nav-cta {
-  font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text); text-decoration: none; border: 1px solid var(--border);
-  padding: 0.48rem 1.1rem; border-radius: 2rem; cursor: pointer;
-  background: none; font-family: 'DM Sans', sans-serif; transition: all 0.3s;
+  font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #a89880; text-decoration: none; cursor: pointer;
+  background: none; font-family: 'DM Sans', sans-serif; transition: color 0.3s;
+  border: none; padding: 0;
 }
-.nav-cta:hover { background: var(--accent); border-color: var(--accent); color: var(--btn-text); }
+.nav-cta:hover { color: #f0e8dc; }
 
-/* EMBER CANVAS */
-#ember-canvas {
+/* ── HERO ── */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; padding: 10rem 4rem 6rem;
+  position: relative; overflow: hidden;
+}
+canvas#ember-canvas {
   position: absolute; inset: 0; width: 100%; height: 100%;
   pointer-events: none; z-index: 0;
 }
+.hero-inner { position: relative; z-index: 1; }
 
-/* HERO */
-.hero {
-  min-height: 100vh; display: flex; flex-direction: column;
-  justify-content: center; padding: 8rem 3rem 4rem;
-  position: relative; overflow: hidden;
-}
-.hero-glow {
-  position: absolute; bottom: -15%; left: 38%; transform: translateX(-50%);
-  width: 900px; height: 600px;
-  background: radial-gradient(ellipse, var(--hero-glow) 0%, transparent 65%);
-  pointer-events: none; animation: heroBreath 7s ease-in-out infinite;
-}
-@keyframes heroBreath {
-  0%,100%{opacity:0.75;transform:translateX(-50%) scale(1)}
-  50%{opacity:1;transform:translateX(-50%) scale(1.05)}
-}
-.eyebrow {
-  font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 2rem;
+/* GIANT HEADLINE — breaks the grid intentionally */
+.hero-eyebrow {
+  font-size: 0.68rem; letter-spacing: 0.24em; text-transform: uppercase;
+  color: #c4622d; margin-bottom: 3rem;
   opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s;
+  display: flex; align-items: center; gap: 0.8rem;
 }
-.hero h1 {
-  font-family: var(--heading-font); font-weight: var(--heading-weight);
-  font-size: clamp(3rem, 7.5vw, 6.5rem); line-height: 1.05; max-width: 16ch;
+.hero-eyebrow::before { content: '✦'; font-size: 0.5rem; }
+
+.hero-headline {
+  margin-bottom: 3rem;
   opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s;
 }
-.hero h1 em { font-style: italic; color: var(--accent2); }
+.hero-headline .line {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+/* Each line a different size — intentionally uneven */
+.hero-headline .line-1 {
+  font-size: clamp(4rem, 10vw, 9rem);
+  color: #f0e8dc;
+}
+.hero-headline .line-2 {
+  font-size: clamp(5rem, 13vw, 12rem);
+  color: #c4622d; font-style: italic;
+  /* Bleeds past the container — the grid-breaking moment */
+  margin-left: -0.06em;
+}
+.hero-headline .line-3 {
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  color: #7a6552; font-weight: 300;
+  margin-left: 0.5em;
+}
+
 .hero-sub {
-  margin-top: 2.5rem; font-size: 1.02rem; color: var(--muted);
-  max-width: 46ch; line-height: 1.75;
+  font-size: 1rem; color: #a89880; max-width: 42ch; line-height: 1.75;
+  margin-bottom: 3rem; margin-left: 0.15em;
   opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s;
 }
+
 .hero-actions {
-  margin-top: 3rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+  display: flex; gap: 2rem; align-items: center;
   opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s;
+  margin-left: 0.15em;
 }
-.hero-actions .btn-ghost-link {
-  color: var(--muted); font-size: 0.84rem; text-decoration: none;
-  display: flex; align-items: center; gap: 0.4rem; transition: color 0.3s;
-  background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+.btn-fire {
+  background: none; border: none; cursor: pointer;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.4rem;
+  font-style: italic; color: #e8924a; letter-spacing: 0.02em;
+  display: flex; align-items: center; gap: 0.6rem; transition: all 0.3s;
+  padding: 0; position: relative;
 }
-.hero-actions .btn-ghost-link:hover { color: var(--text); }
-.platforms { margin-top: 5rem; opacity: 0; animation: fadeUp 0.8s ease forwards 1s; }
-.platforms p {
-  font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--faint); margin-bottom: 0.9rem;
+.btn-fire::after {
+  content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+  height: 1px; background: #e8924a; transform: scaleX(0);
+  transform-origin: left; transition: transform 0.3s;
 }
-.platform-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.platform-badge {
-  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-  border-radius: 2rem; padding: 0.32rem 0.9rem;
-  font-size: 0.76rem; color: var(--muted); letter-spacing: 0.04em;
+.btn-fire:hover::after { transform: scaleX(1); }
+.btn-fire:hover { color: #f5c17a; }
+.btn-secondary {
+  font-size: 0.76rem; color: #5a4a38; letter-spacing: 0.1em;
+  text-transform: uppercase; background: none; border: none;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: color 0.3s;
 }
+.btn-secondary:hover { color: #a89880; }
+
+/* SCROLL INDICATOR */
+.scroll-hint {
+  position: absolute; bottom: 3rem; left: 4rem; z-index: 1;
+  font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #3a2e22; display: flex; align-items: center; gap: 0.8rem;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 1.2s;
+}
+.scroll-line {
+  width: 40px; height: 1px; background: #3a2e22;
+  transform-origin: left; animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
 @keyframes fadeUp {
-  from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)}
+  from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)}
 }
 
-/* DIVIDER */
-.divider { height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); margin: 0 3rem; }
+/* ── TEXTURE BREAK ── */
+/* A full-bleed moment between hero and problems — breaks the flow */
+.texture-break {
+  position: relative; padding: 5rem 4rem;
+  background: #1a1208;
+  overflow: hidden;
+}
+.texture-break::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(196,98,45,0.015) 2px, rgba(196,98,45,0.015) 4px
+    );
+}
+.texture-break-inner {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 4rem; flex-wrap: wrap;
+}
+.texture-break-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.6rem, 3vw, 2.8rem);
+  font-weight: 300; font-style: italic;
+  color: #f0e8dc; line-height: 1.35;
+  max-width: 22ch; flex: 1;
+}
+.texture-break-quote em { color: #c4622d; font-style: normal; }
+.texture-break-right {
+  display: flex; flex-direction: column; gap: 1.5rem; flex-shrink: 0;
+}
+.texture-platform {
+  display: flex; align-items: center; gap: 0.8rem;
+  font-size: 0.78rem; color: #5a4a38;
+}
+.texture-platform-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #c4622d; flex-shrink: 0;
+  animation: dotBreath 3s ease-in-out infinite;
+}
+@keyframes dotBreath { 0%,100%{opacity:0.4} 50%{opacity:1} }
 
-/* SECTIONS */
-section { padding: 7rem 3rem; }
-
-/* PROBLEM */
-.problem { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; max-width: 1200px; }
-.problem h2 {
-  font-family: var(--heading-font); font-weight: var(--heading-weight);
-  font-size: clamp(1.9rem,3.2vw,3rem); line-height: 1.2; margin-bottom: 2rem;
-}
-.problem h2 strong { font-weight: 700; color: var(--accent2); }
-.problem p { color: var(--muted); line-height: 1.8; font-size: 0.96rem; margin-bottom: 1.1rem; }
-.pain-list { list-style: none; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.9rem; }
-.pain-list li {
-  display: flex; gap: 0.9rem; align-items: flex-start; padding: 1.1rem 1.3rem;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
-  transition: all 0.3s;
-}
-.pain-list li:hover { border-color: var(--accent); transform: translateX(4px); }
-.pain-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.12rem; }
-.pain-list li div strong { display: block; font-size: 0.86rem; font-weight: 500; color: var(--text); margin-bottom: 0.25rem; }
-.pain-list li div span { font-size: 0.8rem; color: var(--faint); line-height: 1.6; }
-
-/* HOW */
-.how { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.how-header { text-align: center; margin-bottom: 4.5rem; }
-.how-header h2 {
-  font-family: var(--heading-font); font-weight: var(--heading-weight);
-  font-size: clamp(1.7rem,3.2vw,2.8rem); line-height: 1.2; max-width: 22ch; margin: 0 auto;
-}
-.how-header h2 em { font-style: italic; color: var(--accent2); }
-.steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.4rem; max-width: 1200px; margin: 0 auto; }
-.step {
-  padding: 2.3rem; border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); transition: all 0.35s;
-}
-.step:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 14px 36px rgba(0,0,0,0.12); }
-.step-num {
-  font-family: var(--heading-font); font-size: 3.2rem; font-weight: 300;
-  color: var(--border); line-height: 1; margin-bottom: 1.4rem; display: block;
-}
-.step h3 { font-size: 0.92rem; font-weight: 500; color: var(--text); margin-bottom: 0.7rem; }
-.step p { font-size: 0.83rem; color: var(--muted); line-height: 1.7; }
-.step-tag {
-  display: inline-block; margin-top: 1.3rem; font-size: 0.67rem; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent);
-  padding: 0.22rem 0.65rem; border-radius: 2rem; opacity: 0.7;
+/* ── PAIN SECTION — editorial, no cards ── */
+.pain-section {
+  padding: 8rem 4rem;
+  position: relative;
 }
 
-/* PHILOSOPHY */
-.philosophy { max-width: 840px; margin: 0 auto; text-align: center; }
-.philosophy blockquote {
-  font-family: var(--heading-font); font-weight: 300; font-style: italic;
-  font-size: clamp(1.5rem,2.8vw,2.5rem); line-height: 1.45;
-  color: var(--text); margin: 2rem 0 3rem; padding: 0 2rem; position: relative;
+/* The section label sits rotated in the margin — hand-placed feeling */
+.pain-eyebrow {
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: #c4622d; margin-bottom: 5rem;
+  display: flex; align-items: center; gap: 1rem;
 }
-.philosophy blockquote::before {
-  content: '"'; position: absolute; top: -1.5rem; left: -0.5rem;
-  font-size: 7rem; color: var(--accent); opacity: 0.1;
-  font-family: var(--heading-font); line-height: 1;
-}
-.phil-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.1rem; margin-top: 3.5rem; text-align: left; }
-.phil-card { padding: 1.7rem; border: 1px solid var(--border); border-radius: 0.75rem; background: var(--surface); transition: border-color 0.3s; }
-.phil-card:hover { border-color: var(--accent); }
-.phil-card h4 { font-size: 0.78rem; font-weight: 500; color: var(--accent2); margin-bottom: 0.55rem; letter-spacing: 0.04em; text-transform: uppercase; }
-.phil-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+.pain-eyebrow::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, #3a2e22, transparent); }
 
-/* NEVER */
-.never-wrap { padding-top: 0; }
-.never {
-  background: var(--never-bg); border-radius: 1.5rem; padding: 3.5rem;
-  max-width: 880px; margin: 0 auto; border: 1px solid var(--border);
+.pain-intro {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 3.5vw, 3rem);
+  font-weight: 300; line-height: 1.3;
+  color: #f0e8dc; max-width: 28ch;
+  margin-bottom: 6rem;
 }
-.never h3 { font-family: var(--heading-font); font-size: 1.9rem; font-weight: var(--heading-weight); margin-bottom: 0.4rem; }
-.never > p { color: var(--muted); font-size: 0.86rem; margin-bottom: 2.2rem; }
-.never-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.9rem; }
-.never-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.84rem; color: var(--muted); }
-.x-icon {
-  width: 1.35rem; height: 1.35rem; border-radius: 50%;
-  background: rgba(196,98,45,0.08); border: 1px solid var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; color: var(--accent); font-size: 0.58rem; font-weight: 700;
-}
+.pain-intro strong { color: #c4622d; font-weight: 600; font-style: italic; }
 
-/* WAITLIST */
-.waitlist { text-align: center; padding: 8rem 3rem; position: relative; overflow: hidden; }
-.waitlist-glow {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  width: 700px; height: 450px;
-  background: radial-gradient(ellipse, var(--hero-glow) 0%, transparent 65%);
-  pointer-events: none;
-}
-.waitlist h2 {
-  font-family: var(--heading-font); font-weight: var(--heading-weight);
-  font-size: clamp(2rem,4.5vw,3.6rem); line-height: 1.2; margin-bottom: 1rem;
-}
-.waitlist h2 em { font-style: italic; color: var(--accent2); }
-.waitlist > p { color: var(--muted); font-size: 0.98rem; max-width: 42ch; margin: 0 auto 3rem; line-height: 1.7; }
-.wl-form { display: flex; gap: 0.7rem; max-width: 460px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
-.wl-form input {
-  flex: 1; min-width: 210px; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 3rem; padding: 0.88rem 1.5rem; color: var(--text);
-  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; outline: none;
+/* Pain items — pure typography, no cards, alternating indent */
+.pain-items { display: flex; flex-direction: column; gap: 0; }
+
+.pain-item {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 2rem;
+  padding: 3rem 0;
+  border-top: 1px solid #1e1610;
+  position: relative;
   transition: border-color 0.3s;
 }
-.wl-form input::placeholder { color: var(--faint); }
-.wl-form input:focus { border-color: var(--accent); }
-.wl-form button {
-  background: var(--accent); color: var(--btn-text); border: none;
-  padding: 0.88rem 1.9rem; border-radius: 3rem;
-  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500;
-  cursor: pointer; transition: all 0.3s; white-space: nowrap;
+.pain-item:hover { border-color: #3a2e22; }
+/* Alternating indent for hand-placed feeling */
+.pain-item:nth-child(even) { margin-left: 6rem; }
+.pain-item:nth-child(3) { margin-left: 2rem; }
+
+.pain-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.5rem; font-weight: 300;
+  color: #2a1e14; line-height: 1;
+  user-select: none; align-self: start;
+  padding-top: 0.3rem;
 }
-.wl-form button:hover { background: var(--accent2); transform: translateY(-2px); }
-.wl-note { margin-top: 1.4rem; font-size: 0.74rem; color: var(--faint); letter-spacing: 0.05em; }
-.wl-success {
-  display: none; color: var(--accent2); font-family: var(--heading-font);
-  font-size: 1.45rem; font-style: italic; margin-top: 1rem;
-  animation: fadeUp 0.6s ease forwards;
+.pain-body {}
+.pain-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 300; color: #f0e8dc;
+  margin-bottom: 0.7rem; line-height: 1.2;
+}
+.pain-desc {
+  font-size: 0.88rem; color: #6b5a48; line-height: 1.75;
+  max-width: 52ch;
 }
 
-/* FOOTER */
+/* ── FIRE INTERLUDE — fire sits between sections, belongs to neither ── */
+.fire-interlude {
+  position: relative; padding: 2rem 0 0;
+  display: flex; justify-content: center;
+  overflow: visible; /* intentionally overflows */
+}
+.fire-interlude-svg {
+  width: 180px; position: relative; z-index: 2;
+  filter: drop-shadow(0 0 40px rgba(196,98,45,0.3));
+}
+.fire-interlude::before {
+  content: '';
+  position: absolute; top: 50%; left: 0; right: 0;
+  height: 1px; background: linear-gradient(to right, transparent, #2a1e14, transparent);
+  z-index: 1;
+}
+
+/* ── HOW IT WORKS — asymmetric layout ── */
+.how-section { padding: 8rem 4rem; }
+
+.how-header {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+  margin-bottom: 6rem; align-items: end;
+}
+.how-label {
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: #c4622d; margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.how-label::before { content: ''; width: 2rem; height: 1px; background: #c4622d; }
+.how-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 300; line-height: 1.15; color: #f0e8dc;
+}
+.how-title em { font-style: italic; color: #c4622d; }
+.how-desc { font-size: 0.9rem; color: #6b5a48; line-height: 1.8; align-self: end; }
+
+/* Steps — not cards, more like a stacked list with connectors */
+.how-steps { display: flex; flex-direction: column; gap: 0; max-width: 680px; }
+.how-step {
+  display: grid; grid-template-columns: 60px 1fr;
+  gap: 2rem; padding: 2.5rem 0;
+  border-top: 1px solid #1e1610;
+  position: relative;
+}
+.how-step:last-child { border-bottom: 1px solid #1e1610; }
+.how-step-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem; font-weight: 300;
+  color: #c4622d; letter-spacing: 0.1em;
+  padding-top: 0.2rem;
+}
+.how-step-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem; font-weight: 300;
+  color: #f0e8dc; margin-bottom: 0.5rem;
+}
+.how-step-desc { font-size: 0.84rem; color: #6b5a48; line-height: 1.7; }
+.how-step-tag {
+  display: inline-block; margin-top: 0.8rem; font-size: 0.62rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: #c4622d; opacity: 0.6;
+}
+
+/* ── PHILOSOPHY — full bleed dark moment ── */
+.philosophy-section {
+  padding: 8rem 4rem;
+  background: #0c0a08;
+  position: relative; overflow: hidden;
+}
+.philosophy-section::after {
+  content: '✦';
+  position: absolute; right: 4rem; top: 50%; transform: translateY(-50%);
+  font-size: 18rem; color: rgba(196,98,45,0.03);
+  font-family: 'Cormorant Garamond', serif;
+  line-height: 1; pointer-events: none; user-select: none;
+}
+.phil-inner { max-width: 700px; position: relative; z-index: 1; }
+.phil-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 3.5vw, 3rem);
+  font-weight: 300; font-style: italic;
+  line-height: 1.4; color: #f0e8dc;
+  margin-bottom: 4rem;
+  position: relative; padding-left: 2rem;
+}
+.phil-quote::before {
+  content: '';
+  position: absolute; left: 0; top: 0.3em; bottom: 0.3em;
+  width: 2px;
+  background: linear-gradient(to bottom, #c4622d, transparent);
+}
+.phil-cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: #1e1610;
+}
+.phil-card {
+  background: #0c0a08; padding: 2rem;
+  transition: background 0.3s;
+}
+.phil-card:hover { background: #100d0a; }
+.phil-card h4 {
+  font-size: 0.72rem; font-weight: 500; color: #c4622d;
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.6rem;
+}
+.phil-card p { font-size: 0.82rem; color: #5a4a38; line-height: 1.7; }
+
+/* ── NEVER LIST ── */
+.never-section { padding: 6rem 4rem; }
+.never-inner { max-width: 680px; }
+.never-label {
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: #3a2e22; margin-bottom: 2rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.never-label::before { content: ''; width: 2rem; height: 1px; background: #3a2e22; }
+.never-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 300; color: #f0e8dc; margin-bottom: 0.6rem;
+}
+.never-sub { font-size: 0.84rem; color: #5a4a38; margin-bottom: 3rem; }
+.never-items { display: flex; flex-direction: column; gap: 0; }
+.never-item {
+  display: flex; align-items: baseline; gap: 1.2rem;
+  padding: 1rem 0; border-bottom: 1px solid #1a1410;
+  font-size: 0.88rem; color: #5a4a38; transition: color 0.25s;
+}
+.never-item:hover { color: #a89880; }
+.never-x {
+  font-size: 0.6rem; color: #c4622d; flex-shrink: 0;
+  font-weight: 700; letter-spacing: 0.05em;
+}
+
+/* ── WAITLIST — the warm close ── */
+.waitlist-section {
+  padding: 10rem 4rem;
+  position: relative; overflow: hidden;
+  text-align: center;
+}
+.waitlist-glow {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px; height: 500px;
+  background: radial-gradient(ellipse, rgba(196,98,45,0.12) 0%, transparent 65%);
+  pointer-events: none;
+  animation: glowBreath 6s ease-in-out infinite;
+}
+@keyframes glowBreath { 0%,100%{opacity:0.6} 50%{opacity:1} }
+.waitlist-inner { position: relative; z-index: 1; }
+.waitlist-label {
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: #c4622d; margin-bottom: 2rem;
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+}
+.waitlist-label::before, .waitlist-label::after {
+  content: ''; width: 2rem; height: 1px; background: #c4622d; opacity: 0.5;
+}
+.waitlist-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 300; line-height: 1.1;
+  color: #f0e8dc; margin-bottom: 1rem;
+}
+.waitlist-title em { font-style: italic; color: #c4622d; }
+.waitlist-sub {
+  font-size: 0.95rem; color: #6b5a48; max-width: 38ch;
+  margin: 0 auto 3.5rem; line-height: 1.7;
+}
+.wl-form {
+  display: flex; gap: 0.8rem; max-width: 440px;
+  margin: 0 auto; flex-wrap: wrap; justify-content: center;
+}
+.wl-form input {
+  flex: 1; min-width: 200px; background: rgba(255,255,255,0.04);
+  border: 1px solid #2a1e14; border-radius: 0;
+  padding: 0.9rem 1.2rem; color: #f0e8dc;
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+  outline: none; transition: border-color 0.3s;
+  /* Deliberately not rounded — breaks the AI-rounded pattern */
+}
+.wl-form input::placeholder { color: #3a2e22; font-style: italic; }
+.wl-form input:focus { border-color: #c4622d; }
+.wl-form button {
+  background: #c4622d; color: #f0e8dc; border: none;
+  padding: 0.9rem 1.8rem; border-radius: 0;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+  font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; transition: background 0.3s; white-space: nowrap;
+}
+.wl-form button:hover { background: #e8924a; }
+.wl-note {
+  margin-top: 1.5rem; font-size: 0.72rem; color: #3a2e22; letter-spacing: 0.06em;
+  font-style: italic;
+}
+.wl-success {
+  display: none; color: #e8924a; font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem; font-style: italic; margin-top: 1rem;
+}
+
+/* ── FOOTER ── */
 footer {
-  padding: 2.2rem 3rem; border-top: 1px solid var(--border);
+  padding: 2rem 4rem; border-top: 1px solid #1a1410;
   display: flex; justify-content: space-between; align-items: center;
   flex-wrap: wrap; gap: 1rem;
 }
-.footer-tagline { font-family: var(--heading-font); font-style: italic; color: var(--muted); font-size: 0.92rem; }
-footer p { font-size: 0.74rem; color: var(--faint); letter-spacing: 0.04em; }
+.footer-logo {
+  font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+  font-weight: 600; letter-spacing: 0.08em; color: #e8924a;
+}
+.footer-logo span { font-weight: 300; font-style: italic; color: #5a4a38; }
+.footer-tagline { font-family: 'Cormorant Garamond', serif; font-style: italic; color: #3a2e22; font-size: 0.9rem; }
+footer small { font-size: 0.72rem; color: #2a1e14; }
 
-/* REVEAL */
-.reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s ease, transform 0.7s ease; }
+/* ── REVEAL ── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s ease, transform 0.8s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .how-header { grid-template-columns: 1fr; gap: 2rem; }
+  .phil-cards { grid-template-columns: 1fr; }
+  .texture-break-inner { flex-direction: column; gap: 2rem; }
+}
+@media (max-width: 600px) {
   nav { padding: 1.2rem 1.5rem; }
-  section { padding: 5rem 1.5rem; }
-  .hero { padding: 7rem 1.5rem 3rem; }
-  .problem, .steps, .phil-grid, .never-grid { grid-template-columns: 1fr; }
-  .problem { gap: 3rem; }
-  .never { padding: 2.2rem 1.3rem; }
-  footer { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
+  .hero { padding: 8rem 1.5rem 4rem; }
+  .hero-headline .line-2 { margin-left: -0.04em; }
+  .hero-headline .line-3 { margin-left: 0.2em; }
+  .pain-section, .how-section, .never-section, .waitlist-section { padding: 5rem 1.5rem; }
+  .philosophy-section { padding: 5rem 1.5rem; }
+  .texture-break { padding: 3rem 1.5rem; }
+  .pain-item:nth-child(even) { margin-left: 2rem; }
+  .pain-item:nth-child(3) { margin-left: 0; }
+  footer { padding: 2rem 1.5rem; flex-direction: column; text-align: center; }
 }
 </style>
 </head>
 <body>
 
-<!-- THEME PANEL MOUNT -->
 <div id="theme-panel-mount"></div>
 
-<!-- NAV -->
+<!-- NAV — deliberately minimal, no backdrop blur -->
 <nav>
   <a class="logo" href="index.html">Commune <span>Hearth</span></a>
-  <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+  <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join the waitlist</button>
 </nav>
 
-<!-- HERO -->
+<!-- ── HERO ── -->
 <section class="hero">
-  <div class="hero-glow"></div>
   <canvas id="ember-canvas"></canvas>
-  <p class="eyebrow">For community managers, by one</p>
-  <h1>Tend your <em>community.</em> Not your spreadsheets.</h1>
-  <p class="hero-sub">Commune Hearth handles the mechanics of multi-platform community management so you can focus on the thing that actually matters — your people.</p>
-  <div class="hero-actions">
-    <button class="btn-primary" onclick="handleFindMyFire()">Find my fire →</button>
-    <button class="btn-ghost-link" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See how it works →</button>
+  <div class="hero-inner">
+    <p class="hero-eyebrow">For community managers, by one</p>
+
+    <!-- Three lines, three different sizes, the middle one bleeds -->
+    <div class="hero-headline">
+      <span class="line line-1">Tend your</span>
+      <span class="line line-2">community.</span>
+      <span class="line line-3">Not your spreadsheets.</span>
+    </div>
+
+    <p class="hero-sub">A workspace built for the CMs who actually care — about their people, their communities, and the craft of showing up.</p>
+
+    <div class="hero-actions">
+      <button class="btn-fire" onclick="handleFindMyFire()">Find my fire &nbsp;→</button>
+      <button class="btn-secondary" onclick="document.getElementById('the-problem').scrollIntoView({behavior:'smooth'})">See how it works</button>
+    </div>
   </div>
-  <div class="platforms">
-    <p>Built for</p>
-    <div class="platform-list">
-      <span class="platform-badge">Discord</span>
-      <span class="platform-badge">Reddit</span>
-      <span class="platform-badge">Bluesky</span>
-      <span class="platform-badge">Instagram</span>
-      <span class="platform-badge">Twitter / X</span>
+  <div class="scroll-hint">
+    <span class="scroll-line"></span>
+    Scroll
+  </div>
+</section>
+
+<!-- ── TEXTURE BREAK — platforms, hand-placed feeling ── -->
+<div class="texture-break">
+  <div class="texture-break-inner">
+    <p class="texture-break-quote reveal">
+      The spaces other people call home deserve someone who shows up <em>every day.</em>
+    </p>
+    <div class="texture-break-right reveal">
+      <div class="texture-platform"><span class="texture-platform-dot"></span>Discord</div>
+      <div class="texture-platform"><span class="texture-platform-dot" style="animation-delay:0.4s"></span>Reddit</div>
+      <div class="texture-platform"><span class="texture-platform-dot" style="animation-delay:0.8s"></span>Bluesky</div>
+      <div class="texture-platform"><span class="texture-platform-dot" style="animation-delay:1.2s"></span>And wherever your community lives</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PAIN — editorial, no cards ── -->
+<section class="pain-section" id="the-problem">
+  <p class="pain-eyebrow reveal">The reality of the job</p>
+  <p class="pain-intro reveal">You signed up to build community. <strong>Not to manage chaos.</strong></p>
+  <div class="pain-items">
+    <div class="pain-item reveal">
+      <span class="pain-num">01</span>
+      <div class="pain-body">
+        <div class="pain-title">The notifications that never stop</div>
+        <p class="pain-desc">Five platforms, five inboxes, five sets of DMs. You're not managing a community — you're managing tabs. The anxiety of missing something important never goes away.</p>
+      </div>
+    </div>
+    <div class="pain-item reveal">
+      <span class="pain-num">02</span>
+      <div class="pain-body">
+        <div class="pain-title">The DMs buried alive</div>
+        <p class="pain-desc">A new member asking a question. A mod issue that needed your attention yesterday. A partnership opportunity sitting in spam. All of it scrolled away in Discord's endless chat.</p>
+      </div>
+    </div>
+    <div class="pain-item reveal">
+      <span class="pain-num">03</span>
+      <div class="pain-body">
+        <div class="pain-title">The event that lived in your head</div>
+        <p class="pain-desc">The hype posts. The volunteer coordination. The reminders. The recap nobody wrote. Event planning for a community happens entirely in mental overhead and scattered Google Docs.</p>
+      </div>
+    </div>
+    <div class="pain-item reveal">
+      <span class="pain-num">04</span>
+      <div class="pain-body">
+        <div class="pain-title">The members you can't quite remember</div>
+        <p class="pain-desc">That person who's been here since the beginning. The one who caused trouble last month. The mod candidate you keep meaning to reach out to. All of it in your head, nowhere else.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<div class="divider"></div>
+<!-- ── FIRE INTERLUDE — sits between sections, breaks the flow ── -->
+<div class="fire-interlude">
+  <div class="fire-interlude-svg" id="fire-interlude-container"></div>
+</div>
 
-<section>
-  <div class="problem">
-    <div class="reveal">
-      <p class="section-label">The Sunday Problem</p>
-      <h2>You know the drill. Every. Single. <strong>Week.</strong></h2>
-      <p>It's Sunday afternoon. Your community has a tournament on Saturday. You need to post about it on five different platforms — and every single one needs to sound completely different.</p>
-      <p>Discord wants energy. Reddit wants context. Bluesky wants wit. Instagram wants hashtags. Twitter wants brevity. And you're the one translating the same message five times, for five audiences, in five different tones.</p>
-      <p>That's before the DMs buried in spam, the coordination threads you can't find, and the stakeholder recap you still haven't written.</p>
-    </div>
-    <div class="reveal">
-      <ul class="pain-list">
-        <li><span class="pain-icon">🗓</span><div><strong>The Sunday Planning Session</strong><span>Rewriting the same announcement for every platform because no two platforms speak the same language.</span></div></li>
-        <li><span class="pain-icon">📬</span><div><strong>Coordination That Goes Nowhere</strong><span>DMs lost in spam. Discord threads buried under 400 messages. Conversations everywhere and nowhere.</span></div></li>
-        <li><span class="pain-icon">🔁</span><div><strong>Switching Contexts Constantly</strong><span>Six tabs open. Five apps running. One brain trying to hold it all together while still showing up for your community.</span></div></li>
-        <li><span class="pain-icon">📊</span><div><strong>Proving Your Worth in a Report</strong><span>Pulling data from every platform manually to prove your community thrives — because stakeholders only speak spreadsheet.</span></div></li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="how" id="how">
+<!-- ── HOW IT WORKS ── -->
+<section class="how-section" id="how">
   <div class="how-header reveal">
-    <p class="section-label" style="justify-content:center;margin-bottom:1.4rem">How it works</p>
-    <h2>Your voice. Every platform. <em>Zero soul sold.</em></h2>
+    <div>
+      <p class="how-label">How Hearth works</p>
+      <h2 class="how-title">Everything you know about your community. <em>One warm place.</em></h2>
+    </div>
+    <p class="how-desc">Hearth is not a social media tool. It's not a CRM. It's a community manager's notebook — the place where everything worth knowing about your community actually lives.</p>
   </div>
-  <div class="steps">
-    <div class="step reveal">
-      <span class="step-num">01</span>
-      <h3>Feed It Your Voice</h3>
-      <p>Paste in past posts from each platform. Hearth learns how you write for Discord versus Reddit versus Bluesky — because they're all different and that's the whole point.</p>
-      <span class="step-tag">Voice Profiles</span>
+  <div class="how-steps">
+    <div class="how-step reveal">
+      <span class="how-step-num">✦ 01</span>
+      <div>
+        <div class="how-step-title">The Hearth — your morning home base</div>
+        <p class="how-step-desc">Open Hearth in the morning. See what needs your attention today. Where does the community need you? What's happening? What can wait? All in one warm, unhurried view.</p>
+        <span class="how-step-tag">Daily pulse</span>
+      </div>
     </div>
-    <div class="step reveal">
-      <span class="step-num">02</span>
-      <h3>Drop In Your Core Message</h3>
-      <p>Tell Hearth what's happening. A tournament. A drop. An announcement. Just the essentials — it handles the platform translation in your voice, not a generic AI voice.</p>
-      <span class="step-tag">Smart Suggestions</span>
+    <div class="how-step reveal">
+      <span class="how-step-num">✦ 02</span>
+      <div>
+        <div class="how-step-title">The Chronicle — your people, their stories</div>
+        <p class="how-step-desc">A notebook for the members worth remembering. Not a database — a living record. The veteran who always shows up. The rising star worth watching. The context you need before a hard conversation.</p>
+        <span class="how-step-tag">Community CRM</span>
+      </div>
     </div>
-    <div class="step reveal">
-      <span class="step-num">03</span>
-      <h3>You Review. You Approve. You Post.</h3>
-      <p>Hearth suggests. You decide. Nothing goes out without your eyes on it. Because your community trusts you — not an algorithm — and that trust is not negotiable.</p>
-      <span class="step-tag">Human First</span>
+    <div class="how-step reveal">
+      <span class="how-step-num">✦ 03</span>
+      <div>
+        <div class="how-step-title">The Gather — events without the chaos</div>
+        <p class="how-step-desc">Plan the whole lifecycle — hype, coordination, the event itself, the recap. Everything in one place. Nothing lost in Discord DMs or a Google Doc nobody can find.</p>
+        <span class="how-step-tag">Event planning</span>
+      </div>
     </div>
-  </div>
-</section>
-
-<section>
-  <div class="philosophy reveal">
-    <p class="section-label" style="justify-content:center">Our belief</p>
-    <blockquote>Community managers pour their soul into spaces other people call home. We handle the mechanics so they never have to choose between consistency and authenticity.</blockquote>
-    <div class="phil-grid">
-      <div class="phil-card"><h4>The Human is Irreplaceable</h4><p>Every feature enhances human judgment — never bypasses it. You read the room. You know when not to post. No tool can replicate that.</p></div>
-      <div class="phil-card"><h4>Communities Deserve Authenticity</h4><p>Your community built trust with you — not an AI. Suggestions should sound like you on a good day, or they're not good enough.</p></div>
-      <div class="phil-card"><h4>Relief Without Compromise</h4><p>You shouldn't choose between showing up consistently and showing up fully. Hearth removes the mechanical drain without touching the magic.</p></div>
-      <div class="phil-card"><h4>Built From the Inside</h4><p>Made by an ex-CM who lived every one of these problems. Not a growth hacker who read about community management once.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="never-wrap">
-  <div class="never reveal">
-    <h3>What we'll never build</h3>
-    <p>Some things aren't features. They're principles.</p>
-    <div class="never-grid">
-      <div class="never-item"><span class="x-icon">✕</span>One-click auto-posting without review</div>
-      <div class="never-item"><span class="x-icon">✕</span>AI responses to your community members</div>
-      <div class="never-item"><span class="x-icon">✕</span>Generic bulk content generation</div>
-      <div class="never-item"><span class="x-icon">✕</span>Anything that removes the human from the loop</div>
-      <div class="never-item"><span class="x-icon">✕</span>Tools that make every community sound the same</div>
-      <div class="never-item"><span class="x-icon">✕</span>Features that replace judgment with automation</div>
+    <div class="how-step reveal">
+      <span class="how-step-num">✦ 04</span>
+      <div>
+        <div class="how-step-title">The Voice — for when you do need to post</div>
+        <p class="how-step-desc">When content is part of the job, Hearth helps without replacing you. Kindling for your own ideas. Your voice, not a generic AI's. Nothing goes out without your eyes on it.</p>
+        <span class="how-step-tag">Optional · Human-first</span>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="waitlist" id="waitlist">
+<!-- ── PHILOSOPHY — full bleed dark ── -->
+<section class="philosophy-section">
+  <div class="phil-inner reveal">
+    <p class="phil-quote">
+      Community managers pour their soul into spaces other people call home. We handle the mechanics so they never have to choose between consistency and authenticity.
+    </p>
+    <div class="phil-cards">
+      <div class="phil-card"><h4>The human is irreplaceable</h4><p>Every feature enhances judgment — never bypasses it. You read the room. You know when not to post. No tool can replicate that and we will never try.</p></div>
+      <div class="phil-card"><h4>No guilt mechanics</h4><p>Hearth never tells you what you haven't done. No streaks that break. No empty states that make you feel behind. Open it because you want to, not because it demands something.</p></div>
+      <div class="phil-card"><h4>Your space, not ours</h4><p>Every workspace looks different because every community is. Customise the colours, the themes, the seasons. When someone sees your screenshot, they see you.</p></div>
+      <div class="phil-card"><h4>Built from the inside</h4><p>Made by an ex-CM who lived every one of these problems. Not a growth hacker who read about community management once.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── NEVER LIST ── -->
+<section class="never-section">
+  <div class="never-inner reveal">
+    <p class="never-label">Our commitments</p>
+    <h2 class="never-title">What we'll never build</h2>
+    <p class="never-sub">Some things aren't missing features. They're principles.</p>
+    <div class="never-items">
+      <div class="never-item"><span class="never-x">✕</span>One-click auto-posting without your review</div>
+      <div class="never-item"><span class="never-x">✕</span>AI that responds to your community members</div>
+      <div class="never-item"><span class="never-x">✕</span>Generic bulk content that sounds like everyone</div>
+      <div class="never-item"><span class="never-x">✕</span>Anything that removes the human from the loop</div>
+      <div class="never-item"><span class="never-x">✕</span>Guilt mechanics that make you dread opening the app</div>
+      <div class="never-item"><span class="never-x">✕</span>Features built for Fortune 500 companies where individual voice is frowned upon</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WAITLIST ── -->
+<section class="waitlist-section" id="waitlist">
   <div class="waitlist-glow"></div>
-  <p class="section-label" style="justify-content:center;margin-bottom:1.4rem">Early access</p>
-  <h2>Be the first to <em>tend your hearth.</em></h2>
-  <p>We're building this for the CMs who care deeply. Join the waitlist and help shape what Commune Hearth becomes.</p>
-  <div class="wl-form" id="wl-form">
-    <input type="email" id="wl-email" placeholder="your@email.com">
-    <button onclick="handleWaitlist()">Join Waitlist</button>
+  <div class="waitlist-inner">
+    <p class="waitlist-label">Early access</p>
+    <h2 class="waitlist-title">Be the first to<br><em>tend your hearth.</em></h2>
+    <p class="waitlist-sub">Building this for the CMs who care deeply. Join the waitlist and help shape what Hearth becomes.</p>
+    <div class="wl-form" id="wl-form">
+      <input type="email" id="wl-email" placeholder="your@email.com">
+      <button onclick="handleWaitlist()">Join waitlist</button>
+    </div>
+    <div class="wl-success" id="wl-success">You're on the list. Welcome to the hearth. 🔥</div>
+    <p class="wl-note">No spam. No noise. Just updates when it matters.</p>
   </div>
-  <div class="wl-success" id="wl-success">You're on the list. Welcome to the hearth. 🔥</div>
-  <p class="wl-note">No spam. No noise. Just updates when it matters.</p>
 </section>
 
+<!-- ── FOOTER ── -->
 <footer>
-  <a class="logo" href="index.html">Commune <span>Hearth</span></a>
-  <p class="footer-tagline">Tend your community.</p>
-  <p>© 2026 Commune Hearth. Built by a CM, for CMs.</p>
+  <span class="footer-logo">Commune <span>Hearth</span></span>
+  <span class="footer-tagline">Tend your community.</span>
+  <small>© 2026 Commune Hearth. Built by a CM, for CMs.</small>
 </footer>
 
 <script src="shared/storage.js"></script>
 <script src="shared/theme.js"></script>
 <script src="shared/nav.js"></script>
+<script src="shared/fire.js"></script>
 <script>
-  // Landing page always loads in Ember — themed experience starts at onboarding
+  // Always Ember on landing
   applyThemeVars('ember', {});
   mountThemePanel();
 
-  // Redirect if already onboarded
+  // Mount the interlude fire
+  mountFire('fire-interlude-container');
+
   function handleFindMyFire() {
-    if (HS.isOnboarded()) {
-      navigateTo('dashboard.html');
-    } else {
-      navigateTo('onboarding.html');
-    }
+    if (HS.isOnboarded()) navigateTo('dashboard.html');
+    else navigateTo('onboarding.html');
   }
 
-  // Waitlist
   function handleWaitlist() {
     const val = document.getElementById('wl-email').value;
     if (!val || !val.includes('@')) {
-      document.getElementById('wl-email').style.borderColor = 'var(--accent)';
+      document.getElementById('wl-email').style.borderColor = '#c4622d';
       return;
     }
     document.getElementById('wl-form').style.display = 'none';
@@ -405,122 +701,66 @@ footer p { font-size: 0.74rem; color: var(--faint); letter-spacing: 0.04em; }
 
   // Scroll reveal
   const obs = new IntersectionObserver((entries) => {
-    entries.forEach((e,i) => {
+    entries.forEach((e, i) => {
       if (e.isIntersecting) {
-        setTimeout(() => e.target.classList.add('visible'), i * 90);
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
         obs.unobserve(e.target);
       }
     });
-  }, { threshold: 0.08 });
+  }, { threshold: 0.06 });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-  // ── HERO EMBERS ──────────────────────────────────────────
+  // Hero embers
   (function initEmbers() {
     const canvas = document.getElementById('ember-canvas');
-    const ctx    = canvas.getContext('2d');
-
-    function resize() {
-      canvas.width  = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    }
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
     resize();
     window.addEventListener('resize', resize);
-
-    // Colour palette — pulls accent colours to match theme
-    function getEmberColors() {
-      const s = getComputedStyle(document.documentElement);
-      return [
-        s.getPropertyValue('--accent').trim()  || '#c4622d',
-        s.getPropertyValue('--accent2').trim() || '#e8924a',
-        s.getPropertyValue('--fire-bright').trim() || '#ffe066',
-      ];
+    function getColors() {
+      return ['#c4622d','#e8924a','#f5c17a','#fff5cc'];
     }
-
-    // Spawn embers only in the RIGHT half of the hero
-    // so they don't clash with the headline text
-    function createEmber() {
-      const w = canvas.width;
-      const h = canvas.height;
-      const colors = getEmberColors();
+    function spawn() {
+      const w = canvas.width, h = canvas.height;
       return {
-        x:     w * 0.52 + Math.random() * w * 0.44,  // right 44% of canvas
-        y:     h * 0.6  + Math.random() * h * 0.35,  // start near bottom
-        r:     1.5 + Math.random() * 5,               // varied sizes
-        vx:    (Math.random() - 0.5) * 0.6,           // gentle sideways drift
-        vy:    -(0.4 + Math.random() * 1.2),           // float upward
-        alpha: 0,
-        maxAlpha: 0.15 + Math.random() * 0.45,        // some bright, some faint
-        fadeIn:  true,
-        life:    0,
-        maxLife: 120 + Math.random() * 180,           // frames alive
-        color:   colors[Math.floor(Math.random() * colors.length)],
-        // Slight wobble
-        wobble:  (Math.random() - 0.5) * 0.02,
+        x: w * 0.5 + Math.random() * w * 0.46,
+        y: h * 0.65 + Math.random() * h * 0.3,
+        r: 1 + Math.random() * 4.5,
+        vx: (Math.random() - 0.5) * 0.55,
+        vy: -(0.4 + Math.random() * 1.2),
+        alpha: 0, maxAlpha: 0.15 + Math.random() * 0.45,
+        life: 0, maxLife: 100 + Math.random() * 160,
+        color: getColors()[Math.floor(Math.random() * 4)],
+        wobble: (Math.random() - 0.5) * 0.02,
       };
     }
-
-    let embers = [];
-    // Stagger initial spawn so they don't all appear at once
-    for (let i = 0; i < 28; i++) {
-      const e = createEmber();
-      e.life = Math.random() * e.maxLife; // start at random life point
-      e.alpha = e.maxAlpha * (e.life / e.maxLife);
-      embers.push(e);
-    }
-
+    let embers = Array.from({length:24}, () => { const e = spawn(); e.life = Math.random() * e.maxLife; return e; });
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Occasionally spawn a fresh ember
-      if (Math.random() < 0.08 && embers.length < 35) {
-        embers.push(createEmber());
-      }
-
+      if (Math.random() < 0.08 && embers.length < 32) embers.push(spawn());
       embers = embers.filter(e => e.life < e.maxLife);
-
       embers.forEach(e => {
-        e.life++;
-        e.vx += e.wobble;
-        e.x  += e.vx;
-        e.y  += e.vy;
-
-        // Fade in then fade out
-        const halfLife = e.maxLife / 2;
-        if (e.life < halfLife * 0.3) {
-          e.alpha = e.maxAlpha * (e.life / (halfLife * 0.3));
-        } else if (e.life > halfLife * 1.4) {
-          e.alpha = e.maxAlpha * (1 - (e.life - halfLife * 1.4) / (e.maxLife - halfLife * 1.4));
-        } else {
-          e.alpha = e.maxAlpha;
+        e.life++; e.vx += e.wobble; e.x += e.vx; e.y += e.vy;
+        const q = e.maxLife * 0.25;
+        if (e.life < q) e.alpha = e.maxAlpha * (e.life / q);
+        else if (e.life > e.maxLife * 0.65) e.alpha = e.maxAlpha * (1 - (e.life - e.maxLife * 0.65) / (e.maxLife * 0.35));
+        else e.alpha = e.maxAlpha;
+        e.alpha = Math.max(0, e.alpha);
+        ctx.save(); ctx.globalAlpha = e.alpha;
+        if (e.r > 2.5) {
+          const g = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.r * 3);
+          g.addColorStop(0, e.color + '40'); g.addColorStop(1, 'transparent');
+          ctx.beginPath(); ctx.arc(e.x, e.y, e.r * 3, 0, Math.PI * 2);
+          ctx.fillStyle = g; ctx.fill();
         }
-
-        e.alpha = Math.max(0, Math.min(e.maxAlpha, e.alpha));
-
-        // Draw the ember — slightly oval, hand-drawn feel
-        ctx.save();
-        ctx.globalAlpha = e.alpha;
         ctx.beginPath();
-        ctx.ellipse(e.x, e.y, e.r, e.r * 0.65, e.life * 0.02, 0, Math.PI * 2);
-        ctx.fillStyle = e.color;
-        ctx.fill();
-
-        // Tiny glow around larger embers
-        if (e.r > 3) {
-          const grd = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.r * 2.5);
-          grd.addColorStop(0, e.color + '40');
-          grd.addColorStop(1, 'transparent');
-          ctx.beginPath();
-          ctx.arc(e.x, e.y, e.r * 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = grd;
-          ctx.fill();
-        }
-
+        ctx.ellipse(e.x, e.y, e.r, e.r * 0.65, e.life * 0.03, 0, Math.PI * 2);
+        ctx.fillStyle = e.color; ctx.fill();
         ctx.restore();
       });
-
       requestAnimationFrame(draw);
     }
-
     draw();
   })();
 </script>
